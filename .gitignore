@@ -1,6 +1,4 @@
 node_modules/
 dist/
 .env
-coverage/
-cypress/videos/
-cypress/screenshots/
+# Default .gitignore for Node.js
