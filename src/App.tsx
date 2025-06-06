@@ -2,9 +2,11 @@ import React from "react";
 
 const App: React.FC = () => {
   return (
-    <div>
-      <h1>FantasyWorldBuilder is Working!</h1>
-      <p>This is a test message.</p>
+    <div className="min-vh-100 d-flex justify-content-center align-items-center">
+      <div className="card p-4 shadow-sm">
+        <h1 className="card-title text-primary">FantasyWorldBuilder працює!</h1>
+        <p className="card-text text-muted">Це тестове повідомлення.</p>
+      </div>
     </div>
   );
 };

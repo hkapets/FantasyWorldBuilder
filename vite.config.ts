@@ -5,5 +5,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    hmr: {
+      overlay: true,
+    },
+  },
+  css: {
+    postcss: "./postcss.config.js", // Явно вказуємо шлях
   },
 });
