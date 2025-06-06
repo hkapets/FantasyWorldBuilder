@@ -9,7 +9,4 @@ export default defineConfig({
       overlay: true,
     },
   },
-  css: {
-    postcss: "./postcss.config.js", // Явно вказуємо шлях
-  },
 });
