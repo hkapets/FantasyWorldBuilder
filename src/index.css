@@ -1,0 +1,68 @@
+/* Загальні стилі для body */
+body {
+  background-color: #1a1a2e; /* Темний фон, як нічне небо */
+  color: #e5e5e5; /* Світлий текст для читабельності */
+  font-family: "Georgia", serif; /* Фентезі-шрифт з ефектом пергаменту */
+  margin: 0;
+  padding: 0;
+}
+
+/* Стилізація навігаційної панелі */
+.navbar {
+  background-color: #0f3460; /* Темно-синій металічний відтінок */
+  border-bottom: 2px solid #e9c46a; /* Золотава облямівка для фентезі-ефекту */
+}
+
+.navbar-brand {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #f4a261; /* Теплий помаранчевий для назви */
+  text-shadow: 1px 1px 2px #e76f51; /* Легкий тінь для глибини */
+}
+
+.nav-link {
+  color: #e5e5e5 !important; /* Світлий текст для вкладок */
+  font-size: 1.1rem;
+  margin-right: 15px;
+  transition: color 0.3s ease; /* Плавна зміна кольору при наведенні */
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #e9c46a !important; /* Золотий акцент при наведенні чи активності */
+  background-color: #0f3460; /* Збереження фону */
+}
+
+/* Стилізація контейнера вмісту */
+.container {
+  max-width: 900px;
+  margin-top: 20px;
+}
+
+.card {
+  background-color: #16213e; /* Темний фон картки, як старовинний пергамент */
+  border: 1px solid #e9c46a; /* Золотава облямівка */
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Тінь для об’єму */
+}
+
+h2 {
+  color: #f4a261; /* Теплий заголовок */
+  text-align: center;
+  margin-bottom: 20px;
+  text-transform: uppercase; /* Верхній регістр для ефекту */
+  letter-spacing: 2px; /* Додатковий простір для фентезі-стилю */
+}
+
+/* Стилі для контенту всередині модулів */
+.card p {
+  color: #d3d3d3; /* Світло-сірий текст для контрасту */
+  line-height: 1.6;
+}
+
+/* Анімація при наведенні на картку */
+.card:hover {
+  transform: translateY(-5px);
+  transition: transform 0.3s ease;
+}

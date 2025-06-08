@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "dependencies": {
     "@headlessui/react": "^1.7.0",
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.6",
     "fuse.js": "^6.6.0",
     "html2canvas": "^1.4.0",
     "i18next": "^23.0.0",
