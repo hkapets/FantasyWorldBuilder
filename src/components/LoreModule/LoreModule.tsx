@@ -11,8 +11,8 @@ interface Skill {
   name: string;
   icon: string;
   customIcon?: File | null;
-  parentId?: string | null; // Дозволяємо null для батьківського навичку
-  isUltimate?: boolean; // Позначає ультимативний навик
+  parentId?: string | null;
+  isUltimate?: boolean;
 }
 
 interface MagicType {
@@ -40,105 +40,112 @@ const LoreModule: React.FC = () => {
   const [magicTypes, setMagicTypes] = useState<MagicType[]>(() => {
     try {
       const saved = localStorage.getItem("magicTypes");
-      return saved
-        ? JSON.parse(saved).map((m: any) => ({
-            ...m,
-            customIcon: null,
-            skills: m.skills || [],
-          }))
-        : [
-            {
-              id: "1",
-              name: "Вогонь",
-              icon: "/icons/fire.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "2",
-              name: "Вода",
-              icon: "/icons/water.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "3",
-              name: "Повітря",
-              icon: "/icons/air.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "4",
-              name: "Земля",
-              icon: "/icons/earth.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "5",
-              name: "Рослин",
-              icon: "/icons/plants.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "6",
-              name: "Світла",
-              icon: "/icons/light.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "7",
-              name: "Темряви",
-              icon: "/icons/darkness.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "8",
-              name: "Швидкості",
-              icon: "/icons/speed.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "9",
-              name: "Електромагія",
-              icon: "/icons/electromagic.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "10",
-              name: "Магія впливу",
-              icon: "/icons/influence.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "11",
-              name: "Магія посилення",
-              icon: "/icons/enhancement.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "12",
-              name: "Тіні",
-              icon: "/icons/shadow.png",
-              customIcon: null,
-              skills: [],
-            },
-            {
-              id: "13",
-              name: "Створення",
-              icon: "/icons/creation.png",
-              customIcon: null,
-              skills: [],
-            },
-          ];
+      const initialTypes = [
+        {
+          id: "1",
+          name: "Вогонь",
+          icon: "/icons/fire.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "2",
+          name: "Вода",
+          icon: "/icons/water.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "3",
+          name: "Повітря",
+          icon: "/icons/air.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "4",
+          name: "Земля",
+          icon: "/icons/earth.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "5",
+          name: "Рослин",
+          icon: "/icons/plants.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "6",
+          name: "Світла",
+          icon: "/icons/light.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "7",
+          name: "Темряви",
+          icon: "/icons/darkness.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "8",
+          name: "Швидкості",
+          icon: "/icons/speed.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "9",
+          name: "Електромагія",
+          icon: "/icons/electromagic.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "10",
+          name: "Магія впливу",
+          icon: "/icons/influence.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "11",
+          name: "Магія посилення",
+          icon: "/icons/enhancement.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "12",
+          name: "Тіні",
+          icon: "/icons/shadow.png",
+          customIcon: null,
+          skills: [],
+        },
+        {
+          id: "13",
+          name: "Створення",
+          icon: "/icons/creation.png",
+          customIcon: null,
+          skills: [],
+        },
+      ];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Перевіряємо, чи є всі 13 типів, якщо ні — повертаємо initialTypes
+        if (parsed.length !== 13) {
+          console.warn(
+            "Incomplete magicTypes in localStorage, resetting to initialTypes"
+          );
+          localStorage.removeItem("magicTypes"); // Очищаємо пошкоджені дані
+          return initialTypes;
+        }
+        return parsed;
+      }
+      return initialTypes;
     } catch (error) {
       console.warn("Failed to load magic types from localStorage:", error);
       return [
@@ -247,6 +254,7 @@ const LoreModule: React.FC = () => {
   const [isUltimate, setIsUltimate] = useState(false);
 
   useEffect(() => {
+    console.log("Current magicTypes:", magicTypes); // Дебаг для перевірки поточного стану
     try {
       localStorage.setItem("loreEntries", JSON.stringify(loreEntries));
       localStorage.setItem(
@@ -322,7 +330,7 @@ const LoreModule: React.FC = () => {
           customIcon: newMagicIcon,
           skills: [],
         };
-        setMagicTypes([...magicTypes, newMagic]);
+        setMagicTypes((prev) => [...prev, newMagic]);
       }
       setNewMagicName("");
       setNewMagicIcon(null);
@@ -368,7 +376,7 @@ const LoreModule: React.FC = () => {
 
   const sections = {
     worldDescription: "Опис світу",
-    racesAndPeoples: "Расы і народи",
+    racesAndPeoples: "Раси і народи",
     religionAndMythology: "Релігія і міфологія",
     magic: "Магія",
     artifacts: "Артефакти",
@@ -484,16 +492,26 @@ const LoreModule: React.FC = () => {
                   <select
                     className="form-select"
                     value={selectedMagicType || ""}
-                    onChange={(e) => setSelectedMagicType(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedMagicType(value === "custom" ? value : value);
+                      console.log("Selected magic type:", value); // Дебаг
+                    }}
                   >
                     <option value="" disabled>
                       Оберіть тип магії
                     </option>
-                    {magicTypes.map((magic) => (
-                      <option key={magic.id} value={magic.id}>
-                        {magic.name}
+                    {magicTypes.length > 0 ? (
+                      magicTypes.map((magic) => (
+                        <option key={magic.id} value={magic.id}>
+                          {magic.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        Немає типів магії
                       </option>
-                    ))}
+                    )}
                     <option value="custom">Користувацька</option>
                   </select>
                   {selectedMagicType === "custom" && (
