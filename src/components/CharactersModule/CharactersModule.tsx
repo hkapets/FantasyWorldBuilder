@@ -22,7 +22,7 @@ const CharactersModule: React.FC = () => {
       const saved = localStorage.getItem("characters");
       return saved ? JSON.parse(saved) : [];
     } catch (error) {
-      console.warn("Failed to load characters from localStorage:", error);
+      console.warn("Не вдалося завантажити персонажів з localStorage:", error);
       return [];
     }
   });
@@ -41,7 +41,7 @@ const CharactersModule: React.FC = () => {
     try {
       localStorage.setItem("characters", JSON.stringify(characters));
     } catch (error) {
-      console.warn("Failed to save characters to localStorage:", error);
+      console.warn("Не вдалося зберегти персонажів у localStorage:", error);
     }
   }, [characters]);
 
@@ -66,12 +66,12 @@ const CharactersModule: React.FC = () => {
 
   return (
     <div className="p-4">
-      <h2 className="h4">Characters Module</h2>
+      <h2>Персонажі</h2>
       <div className="input-group mb-3">
         <input
           type="text"
           className="form-control"
-          placeholder="Name"
+          placeholder="Ім'я"
           value={newCharacter.name}
           onChange={(e) =>
             setNewCharacter({ ...newCharacter, name: e.target.value })
@@ -80,7 +80,7 @@ const CharactersModule: React.FC = () => {
         <input
           type="number"
           className="form-control"
-          placeholder="Age"
+          placeholder="Вік"
           value={newCharacter.age}
           onChange={(e) =>
             setNewCharacter({
@@ -92,20 +92,20 @@ const CharactersModule: React.FC = () => {
         <input
           type="text"
           className="form-control"
-          placeholder="Race"
+          placeholder="Раса"
           value={newCharacter.race}
           onChange={(e) =>
             setNewCharacter({ ...newCharacter, race: e.target.value })
           }
         />
         <button onClick={addCharacter} className="btn btn-secondary">
-          Add Character
+          Додати персонажа
         </button>
       </div>
       <ul className="list-group">
         {characters.map((char) => (
           <li key={char.id} className="list-group-item">
-            {char.name} ({char.race}, {char.age} years)
+            {char.name} ({char.race}, {char.age} років)
           </li>
         ))}
       </ul>

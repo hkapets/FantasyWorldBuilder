@@ -1,36 +1,38 @@
 import React, { useState } from "react";
-import NotesModule from "./components/NotesModule/NotesModule";
 import LoreModule from "./components/LoreModule/LoreModule";
-import MapModule from "./components/MapModule/MapModule";
 import CharactersModule from "./components/CharactersModule/CharactersModule";
+import RelationshipsModule from "./components/RelationshipsModule/RelationshipsModule";
 import TimelineModule from "./components/TimelineModule/TimelineModule";
+import MapsModule from "./components/MapModule/MapModule"; // Змінено на MapsModule для "Карти"
+import MapModule from "./components/MapModule/MapModule"; // Залишаємо як є для "Карта"
+import NotesModule from "./components/NotesModule/NotesModule";
+import TemplatesModule from "./components/TemplatesModule/TemplatesModule";
+import SearchModule from "./components/SearchModule/SearchModule";
 import ImportExportModule from "./components/ImportExportModule/ImportExportModule";
 import TestModule from "./components/TestModule/TestModule";
-import SearchModule from "./components/SearchModule/SearchModule";
-import TemplatesModule from "./components/TemplatesModule/TemplatesModule";
-import RelationshipsModule from "./components/RelationshipsModule/RelationshipsModule";
 
-// Додамо інтерфейс для типізації вкладок
+// Інтерфейс для типізації вкладок
 interface Tab {
   name: string;
   component: React.FC;
 }
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>("Notes");
+  const [activeTab, setActiveTab] = useState<string>("Лор");
 
-  // Масив вкладок
+  // Масив вкладок у заданому порядку з українськими назвами
   const tabs: Tab[] = [
-    { name: "Notes", component: NotesModule },
-    { name: "Lore", component: LoreModule },
-    { name: "Map", component: MapModule },
-    { name: "Characters", component: CharactersModule },
-    { name: "Timeline", component: TimelineModule },
-    { name: "Import/Export", component: ImportExportModule },
-    { name: "Test", component: TestModule },
-    { name: "Search", component: SearchModule },
-    { name: "Templates", component: TemplatesModule },
-    { name: "Relationships", component: RelationshipsModule },
+    { name: "Лор", component: LoreModule },
+    { name: "Персонажі", component: CharactersModule },
+    { name: "Зв’язки", component: RelationshipsModule },
+    { name: "Хронологія", component: TimelineModule },
+    { name: "Карти", component: MapsModule }, // Для "Карти" як категорії
+    { name: "Карта", component: MapModule }, // Для окремої карти
+    { name: "Нотатки", component: NotesModule },
+    { name: "Шаблони", component: TemplatesModule },
+    { name: "Пошук", component: SearchModule },
+    { name: "Імпорт/Експорт", component: ImportExportModule },
+    { name: "Тести", component: TestModule },
   ];
 
   const ActiveComponent = tabs.find((tab) => tab.name === activeTab)?.component;
@@ -76,7 +78,7 @@ const App: React.FC = () => {
       {/* Контейнер для вмісту вкладок */}
       <div className="container mt-4">
         <h2 className="text-center mb-4">
-          Ласкаво просимо до {activeTab} модуля!
+          Ласкаво просимо до модуля {activeTab}!
         </h2>
         <div className="card p-4 shadow-sm bg-secondary">
           {ActiveComponent && <ActiveComponent />}
