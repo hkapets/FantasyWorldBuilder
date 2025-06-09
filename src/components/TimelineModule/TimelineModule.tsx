@@ -7,7 +7,8 @@ import {
   MdDomainDisabled,
   MdOutlineAutoAwesome,
 } from "react-icons/md";
-import NotesModule from "./NotesModule"; // Перевір шлях імпорту
+import NotesModule from "../NotesModule/NotesModule";
+import { Note } from "../NotesModule/NotesModule"; // Перевір шлях
 
 interface Event {
   id: number;
@@ -20,12 +21,13 @@ interface Event {
 }
 
 interface TimelineModuleProps {
-  onNoteSaved?: (event: Event) => void;
+  onNoteSaved?: (note: Note) => void;
 }
 
 const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [showModal, setShowModal] = useState(false);
+
   // Логіка useEffect і handleSave (додай свою реалізацію)
 
   const getEventIcon = (type: string) => {
@@ -45,8 +47,7 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
     }
   };
 
-  // Визначення filteredEvents (приклад: показуємо всі події)
-  const filteredEvents = [...events]; // Заміни на свою логіку фільтрації, якщо є
+  const filteredEvents = [...events]; // Тимчасове рішення
 
   return (
     <div className="p-4">
@@ -77,10 +78,9 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         {/* Форма Modal */}
       </Modal>
-      <NotesModule onEventSaved={onNoteSaved} />{" "}
-      {/* Перевір, чи імпорт працює */}
+      <NotesModule onEventSaved={onNoteSaved} />
     </div>
   );
 };
 
-export default TimelineModule;
+export default TimelineModule; // Додано експорт за замовчуванням

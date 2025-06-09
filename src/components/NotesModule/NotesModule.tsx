@@ -17,6 +17,11 @@ interface Note {
   dateCreated: string;
   relatedEvent: string;
   isPinned: boolean;
+  date?: string;
+  description?: string;
+  location?: string;
+  relatedCharacters?: string;
+  type?: string;
 }
 
 interface NotesModuleProps {
@@ -53,7 +58,6 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
     }
   };
 
-  // Сортування та використання
   const sortedNotes = [...notes].sort((a, b) =>
     a.isPinned === b.isPinned ? 0 : a.isPinned ? -1 : 1
   );
@@ -99,3 +103,4 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
 };
 
 export default NotesModule;
+export type { Note }; // Змінено на export type для сумісності з isolatedModules
