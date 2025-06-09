@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import LoreModule from "./components/LoreModule/LoreModule";
 import CharactersModule from "./components/CharactersModule/CharactersModule";
 import RelationshipsModule from "./components/RelationshipsModule/RelationshipsModule";
@@ -18,7 +18,7 @@ interface Tab {
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("Лор");
-  const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(true); // Стан звуку за замовчуванням увімкнено
+  const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(true); // Стан звуку
 
   // Масив вкладок у заданому порядку з українськими назвами
   const tabs: Tab[] = [
@@ -39,11 +39,31 @@ const App: React.FC = () => {
   // Refs для аудіо
   const buttonSoundRef = useRef<HTMLAudioElement>(null);
   const pageTurnSoundRef = useRef<HTMLAudioElement>(null);
+  const backgroundMusicRef = useRef<HTMLAudioElement>(null);
+
+  // Список треків
+  const backgroundTracks = [
+    "/audio/Mythic Pulse.mp3",
+    "/audio/Epiphany.mp3",
+    "/audio/Elysian.mp3",
+    "/audio/Mythic Realm.mp3",
+    "/audio/Epic Realm.mp3",
+    "/audio/Epic Quest.mp3",
+    "/audio/The Vanguard.mp3",
+    "/audio/Mythic.mp3",
+    "/audio/DoubleTake.mp3",
+    "/audio/Mystic Realms.mp3",
+    "/audio/Mythic Rise.mp3",
+    "/audio/Valor.mp3",
+  ];
+
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
+  const [hasUserInteracted, setHasUserInteracted] = useState<boolean>(false); // Стан взаємодії
 
   // Функція для відтворення звуку кнопки
   const playButtonSound = () => {
     if (isSoundEnabled && buttonSoundRef.current) {
-      buttonSoundRef.current.currentTime = 0; // Повертаємо на початок
+      buttonSoundRef.current.currentTime = 0;
       buttonSoundRef.current
         .play()
         .catch((error) =>
@@ -55,7 +75,7 @@ const App: React.FC = () => {
   // Функція для відтворення звуку гортання
   const playPageTurnSound = () => {
     if (isSoundEnabled && pageTurnSoundRef.current) {
-      pageTurnSoundRef.current.currentTime = 0; // Повертаємо на початок
+      pageTurnSoundRef.current.currentTime = 0;
       pageTurnSoundRef.current
         .play()
         .catch((error) =>
@@ -64,9 +84,52 @@ const App: React.FC = () => {
     }
   };
 
+  // Ефект для управління фоновою музикою
+  useEffect(() => {
+    if (isSoundEnabled && hasUserInteracted && backgroundMusicRef.current) {
+      backgroundMusicRef.current.src = backgroundTracks[currentTrackIndex];
+      backgroundMusicRef.current.volume = 0.3; // Низька гучність
+      backgroundMusicRef.current
+        .play()
+        .catch((error) =>
+          console.warn("Помилка відтворення фонової музики:", error)
+        );
+
+      const handleEnded = () => {
+        setCurrentTrackIndex(
+          (prevIndex) => (prevIndex + 1) % backgroundTracks.length
+        );
+      };
+
+      backgroundMusicRef.current.addEventListener("ended", handleEnded);
+
+      return () => {
+        backgroundMusicRef.current?.removeEventListener("ended", handleEnded);
+        if (!isSoundEnabled && backgroundMusicRef.current) {
+          backgroundMusicRef.current.pause();
+          backgroundMusicRef.current.currentTime = 0;
+        }
+      };
+    } else if (!isSoundEnabled && backgroundMusicRef.current) {
+      backgroundMusicRef.current.pause();
+      backgroundMusicRef.current.currentTime = 0;
+    }
+  }, [isSoundEnabled, hasUserInteracted, currentTrackIndex]);
+
+  // Обробка першої взаємодії
+  const handleUserInteraction = () => {
+    if (!hasUserInteracted) {
+      setHasUserInteracted(true);
+    }
+  };
+
   return (
-    <div className="min-vh-100 bg-dark text-light">
-      {/* Аудіо елементи (приховані) */}
+    <div
+      className="min-vh-100 bg-dark text-light"
+      onClick={handleUserInteraction}
+      onChange={handleUserInteraction}
+    >
+      {/* Аудіо елементи */}
       <audio
         ref={buttonSoundRef}
         src="/audio/quill-button.wav"
@@ -77,6 +140,7 @@ const App: React.FC = () => {
         src="/audio/parchment-rustle.wav"
         preload="auto"
       />
+      <audio ref={backgroundMusicRef} preload="auto" />
 
       {/* Навігаційна панель */}
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -104,10 +168,10 @@ const App: React.FC = () => {
                       activeTab === tab.name ? "active" : ""
                     }`}
                     onClick={() => {
-                      playButtonSound(); // Звук при натисканні кнопки
+                      playButtonSound();
                       setTimeout(() => {
                         setActiveTab(tab.name);
-                        playPageTurnSound(); // Звук гортання після зміни вкладки
+                        playPageTurnSound();
                       }, 100);
                     }}
                   >

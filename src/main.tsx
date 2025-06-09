@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import "bootstrap/dist/css/bootstrap.min.css"; // Стилі Bootstrap
+import "bootstrap/dist/css/bootstrap.min.css"; // Імпорт стилів Bootstrap
 import "./index.css"; // Твої кастомні стилі
 
 const rootElement = document.getElementById("root");

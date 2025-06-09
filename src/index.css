@@ -1,68 +1,256 @@
-/* Загальні стилі для body */
+/* Загальні стилі для темного фону */
 body {
-  background-color: #1a1a2e; /* Темний фон, як нічне небо */
-  color: #e5e5e5; /* Світлий текст для читабельності */
-  font-family: "Georgia", serif; /* Фентезі-шрифт з ефектом пергаменту */
-  margin: 0;
-  padding: 0;
+  background-color: #1a1a1a;
+  color: #f5e8c7;
 }
 
-/* Стилізація навігаційної панелі */
-.navbar {
-  background-color: #0f3460; /* Темно-синій металічний відтінок */
-  border-bottom: 2px solid #e9c46a; /* Золотава облямівка для фентезі-ефекту */
-}
-
-.navbar-brand {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #f4a261; /* Теплий помаранчевий для назви */
-  text-shadow: 1px 1px 2px #e76f51; /* Легкий тінь для глибини */
-}
-
-.nav-link {
-  color: #e5e5e5 !important; /* Світлий текст для вкладок */
-  font-size: 1.1rem;
-  margin-right: 15px;
-  transition: color 0.3s ease; /* Плавна зміна кольору при наведенні */
-}
-
-.nav-link:hover,
-.nav-link.active {
-  color: #e9c46a !important; /* Золотий акцент при наведенні чи активності */
-  background-color: #0f3460; /* Збереження фону */
-}
-
-/* Стилізація контейнера вмісту */
-.container {
-  max-width: 900px;
-  margin-top: 20px;
-}
-
+/* Стилі для карток персонажів */
 .card {
-  background-color: #16213e; /* Темний фон картки, як старовинний пергамент */
-  border: 1px solid #e9c46a; /* Золотава облямівка */
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Тінь для об’єму */
+  border: 2px solid #4a2c2a;
+  background-color: #f5e8c7;
+  border-radius: 8px;
+  transition: transform 0.2s ease-in-out;
+  padding: 1rem;
 }
 
-h2 {
-  color: #f4a261; /* Теплий заголовок */
-  text-align: center;
-  margin-bottom: 20px;
-  text-transform: uppercase; /* Верхній регістр для ефекту */
-  letter-spacing: 2px; /* Додатковий простір для фентезі-стилю */
-}
-
-/* Стилі для контенту всередині модулів */
-.card p {
-  color: #d3d3d3; /* Світло-сірий текст для контрасту */
-  line-height: 1.6;
-}
-
-/* Анімація при наведенні на картку */
 .card:hover {
-  transform: translateY(-5px);
-  transition: transform 0.3s ease;
+  transform: scale(1.05);
+}
+
+/* Стилі для навігаційної панелі */
+.navbar {
+  border-bottom: 2px solid #4a2c2a;
+}
+
+/* Стилі для модального вікна */
+.modal-content {
+  background-color: #f5e8c7;
+  color: #1a1a1a;
+}
+
+.modal-header {
+  border-bottom: 1px solid #4a2c2a;
+}
+
+.modal-footer {
+  border-top: 1px solid #4a2c2a;
+}
+
+/* Стилі для форми */
+.form-control {
+  background-color: #fff;
+  color: #1a1a1a;
+  border: 1px solid #4a2c2a;
+}
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+  background-color: #fff3f3;
+}
+
+/* Стилі для селекту */
+.form-select {
+  background-color: #fff;
+  color: #1a1a1a;
+  border: 1px solid #4a2c2a;
+}
+
+/* Стилі для кнопок */
+.btn-primary {
+  background-color: #4a2c2a;
+  border-color: #4a2c2a;
+}
+
+.btn-primary:hover {
+  background-color: #633d36;
+  border-color: #633d36;
+}
+
+.btn-danger {
+  background-color: #8b0000;
+  border-color: #8b0000;
+}
+
+.btn-danger:hover {
+  background-color: #a00000;
+  border-color: #a00000;
+}
+
+.btn-warning {
+  background-color: #e9c46a;
+  border-color: #e9c46a;
+}
+
+.btn-warning:hover {
+  background-color: #f4d18d;
+  border-color: #f4d18d;
+}
+
+.btn-info {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-info:hover {
+  background-color: #5a6268;
+  border-color: #5a6268;
+}
+
+/* Фентезі-оформлення для селекту */
+.custom-select-fantasy {
+  background-color: #f5e8c7;
+  border: 2px solid #4a2c2a;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  font-family: "Georgia", serif;
+  color: #1a1a1a;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%234a2c2a' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 12px 12px;
+  width: 200px;
+  cursor: pointer;
+}
+
+.custom-select-fantasy:focus {
+  outline: none;
+  border-color: #e9c46a;
+  box-shadow: 0 0 5px rgba(233, 196, 106, 0.5);
+}
+
+.custom-select-fantasy option {
+  background-color: #f5e8c7;
+  color: #1a1a1a;
+  padding: 0.5rem;
+}
+
+/* Стилі для таймлайну */
+.timeline {
+  position: relative;
+  padding: 20px 0;
+  min-height: 400px;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background-color: #4a2c2a;
+  transform: translateX(-50%);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 40px;
+  width: 100%;
+  opacity: 0;
+}
+
+.timeline-item.fade-in {
+  animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.timeline-item.left .timeline-content {
+  margin-left: 0;
+  text-align: right;
+  margin-right: 55%;
+}
+
+.timeline-item.right .timeline-content {
+  margin-right: 0;
+  margin-left: 55%;
+}
+
+.timeline-date {
+  position: absolute;
+  top: 0;
+  width: 50px;
+  text-align: center;
+  background-color: #f5e8c7;
+  border: 2px solid #4a2c2a;
+  border-radius: 50%;
+  padding: 5px;
+  font-size: 0.9rem;
+}
+
+.timeline-item.left .timeline-date {
+  right: calc(55% + 10px);
+}
+
+.timeline-item.right .timeline-date {
+  left: calc(55% + 10px);
+}
+
+.timeline-content {
+  background-color: #f5e8c7;
+  padding: 15px;
+  border: 2px solid #4a2c2a;
+  border-radius: 5px;
+  position: relative;
+  width: 45%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timeline-content h5 {
+  margin-top: 0;
+}
+
+.timeline-content p {
+  margin-bottom: 0;
+}
+
+/* Стилі для нотаток */
+.notes-list {
+  display: grid;
+  gap: 15px;
+}
+
+.note-card {
+  border: 2px solid #4a2c2a;
+  background: linear-gradient(to bottom, #f5e8c7, #d9b38c);
+  padding: 15px;
+  border-radius: 8px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.note-card:hover {
+  transform: scale(1.02);
+}
+
+.badge {
+  margin-right: 5px;
+}
+
+/* Стилі для фільтрів */
+.d-flex {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .d-flex {
+    flex-direction: column;
+  }
+  .form-control,
+  .form-select,
+  .form-control-file {
+    width: 100%;
+  }
 }
