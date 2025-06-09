@@ -8,11 +8,26 @@ import {
   MdPushPin,
 } from "react-icons/md";
 
-const NotesModule: React.FC = () => {
-  const [notes, setNotes] = useState<any[]>([]);
+interface Note {
+  id: number | null;
+  title: string;
+  text: string;
+  category: string;
+  tags: string;
+  dateCreated: string;
+  relatedEvent: string;
+  isPinned: boolean;
+}
+
+interface NotesModuleProps {
+  onEventSaved?: (note: Note) => void;
+}
+
+const NotesModule: React.FC<NotesModuleProps> = ({ onEventSaved }) => {
+  const [notes, setNotes] = useState<Note[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedNote, setSelectedNote] = useState<any>(null);
-  const [formData, setFormData] = useState({
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [formData, setFormData] = useState<Note>({
     id: null,
     title: "",
     text: "",
@@ -24,47 +39,35 @@ const NotesModule: React.FC = () => {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("date");
-  const [autoSaveTimer, setAutoSaveTimer] = useState<any>(null);
+  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
-  // Завантаження нотаток із localStorage
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
     setNotes(savedNotes);
   }, []);
 
-  // Автозбереження
   useEffect(() => {
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
     const timer = setTimeout(() => {
-      if (selectedNote || formData.title)
-        saveNotes([...notes, { ...formData, id: Date.now() }]);
-    }, 5000); // 5 секунд
+      if (selectedNote || formData.title) {
+        const updatedNotes = [...notes, { ...formData, id: Date.now() }];
+        saveNotes(updatedNotes);
+        if (onEventSaved && !selectedNote) {
+          onEventSaved({ ...formData, id: Date.now() });
+        }
+      }
+    }, 5000);
     setAutoSaveTimer(timer);
     return () => clearTimeout(timer);
-  }, [formData]);
+  }, [formData, notes, onEventSaved, selectedNote, autoSaveTimer]);
 
-  // Збереження нотаток
-  const saveNotes = (updatedNotes: any[]) => {
+  const saveNotes = (updatedNotes: Note[]) => {
     setNotes(updatedNotes);
     localStorage.setItem("notes", JSON.stringify(updatedNotes));
   };
 
-  // Створення нотатки при додаванні події в Хронології
-  export const handleEventSaved = (event: any) => {
-    const newNote = {
-      id: Date.now(),
-      title: `Подія: ${event.title}`,
-      text: `${event.description} (Дата: ${event.date}, Місце: ${event.location})`,
-      category: "Подія",
-      tags: event.type.toLowerCase(),
-      dateCreated: new Date().toISOString().split("T")[0],
-      relatedEvent: event.title,
-      isPinned: false,
-    };
-    saveNotes([...notes, newNote]);
-  };
-
-  // Збереження/редагування
   const handleSave = () => {
     if (!formData.title) return;
     const updatedNotes = selectedNote
@@ -87,30 +90,26 @@ const NotesModule: React.FC = () => {
     });
   };
 
-  // Видалення
-  const handleDelete = (note: any) => {
+  const handleDelete = (note: Note) => {
     if (window.confirm("Ви впевнені, що хочете видалити нотатку?")) {
       const updatedNotes = notes.filter((n) => n.id !== note.id);
       saveNotes(updatedNotes);
     }
   };
 
-  // Редагування
-  const handleEdit = (note: any) => {
+  const handleEdit = (note: Note) => {
     setSelectedNote(note);
     setFormData(note);
     setShowModal(true);
   };
 
-  // Закріплення
-  const togglePin = (note: any) => {
+  const togglePin = (note: Note) => {
     const updatedNotes = notes.map((n) =>
       n.id === note.id ? { ...n, isPinned: !n.isPinned } : n
     );
     saveNotes(updatedNotes);
   };
 
-  // Експорт
   const handleExport = () => {
     const dataStr =
       "data:text/json;charset=utf-8," +
@@ -121,7 +120,6 @@ const NotesModule: React.FC = () => {
     downloadAnchor.click();
   };
 
-  // Імпорт
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -134,7 +132,6 @@ const NotesModule: React.FC = () => {
     }
   };
 
-  // Фільтрація
   const filteredNotes = notes.filter(
     (note) =>
       note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,7 +140,6 @@ const NotesModule: React.FC = () => {
       note.dateCreated.includes(searchTerm)
   );
 
-  // Сортування
   const sortedNotes = [...filteredNotes].sort((a, b) => {
     switch (sortBy) {
       case "date":
@@ -159,7 +155,6 @@ const NotesModule: React.FC = () => {
     }
   });
 
-  // Іконка за категорією
   const getCategoryIcon = (category: string) => {
     switch (category.toLowerCase()) {
       case "персонаж":
@@ -211,7 +206,7 @@ const NotesModule: React.FC = () => {
         </Form.Select>
       </div>
       <div className="notes-list">
-        {sortedNotes.map((note, index) => (
+        {sortedNotes.map((note) => (
           <div key={note.id} className="note-card fade-in">
             <div className="d-flex justify-content-between align-items-center">
               <div>
@@ -336,5 +331,4 @@ const NotesModule: React.FC = () => {
   );
 };
 
-export { handleEventSaved };
-export default NotesModule;
+export default NotesModule; // Чіткий експорт

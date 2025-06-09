@@ -7,41 +7,58 @@ import {
   MdDomainDisabled,
   MdOutlineAutoAwesome,
 } from "react-icons/md";
-import { handleEventSaved } from "./NotesModule"; // Імпорт із правильним шляхом
+import NotesModule from "./NotesModule"; // Перевірений шлях
 
-const TimelineModule: React.FC = () => {
-  const [events, setEvents] = useState<any[]>([]);
+interface Event {
+  id: number;
+  date: string;
+  title: string;
+  description: string;
+  location: string;
+  relatedCharacters: string;
+  type: string;
+}
+
+interface TimelineModuleProps {
+  onNoteSaved?: (event: Event) => void;
+}
+
+const TimelineModule: React.FC<TimelineModuleProps> = ({ onNoteSaved }) => {
+  const [events, setEvents] = useState<Event[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [formData, setFormData] = useState({
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [formData, setFormData] = useState<Event>({
     date: "",
     title: "",
     description: "",
     location: "",
     relatedCharacters: "",
     type: "",
+    id: 0,
   });
   const [filterYear, setFilterYear] = useState<string>("");
   const [filterType, setFilterType] = useState<string>("");
   const [validationError, setValidationError] = useState<string>("");
 
-  // Завантаження з localStorage
   useEffect(() => {
     const savedEvents = JSON.parse(localStorage.getItem("events") || "[]");
     setEvents(savedEvents);
   }, []);
 
-  // Збереження в localStorage
-  const saveEvents = (updatedEvents: any[]) => {
+  const saveEvents = (updatedEvents: Event[]) => {
     setEvents(updatedEvents);
     localStorage.setItem("events", JSON.stringify(updatedEvents));
-    // Виклик функції для створення нотатки
-    if (updatedEvents.length > events.length) {
-      handleEventSaved(updatedEvents[updatedEvents.length - 1]);
+    if (updatedEvents.length > events.length && onNoteSaved) {
+      const newEvent = updatedEvents[updatedEvents.length - 1];
+      onNoteSaved({
+        ...newEvent,
+        id: newEvent.id,
+        description: newEvent.description || "",
+        location: newEvent.location || "",
+      });
     }
   };
 
-  // Додавання/редагування події з валідацією
   const handleSave = () => {
     if (!/^\d+$/.test(formData.date)) {
       setValidationError("Дата має бути числовим значенням (наприклад, 1200)!");
@@ -50,7 +67,7 @@ const TimelineModule: React.FC = () => {
     setValidationError("");
     if (selectedEvent) {
       const updatedEvents = events.map((event) =>
-        event === selectedEvent ? { ...formData, id: event.id } : event
+        event.id === selectedEvent.id ? { ...formData, id: event.id } : event
       );
       saveEvents(updatedEvents);
     } else {
@@ -66,25 +83,23 @@ const TimelineModule: React.FC = () => {
       location: "",
       relatedCharacters: "",
       type: "",
+      id: 0,
     });
   };
 
-  // Видалення події
-  const handleDelete = (event: any) => {
+  const handleDelete = (event: Event) => {
     if (window.confirm("Ви впевнені, що хочете видалити подію?")) {
-      const updatedEvents = events.filter((e) => e !== event);
+      const updatedEvents = events.filter((e) => e.id !== event.id);
       saveEvents(updatedEvents);
     }
   };
 
-  // Відкриття форми
-  const handleEdit = (event: any) => {
+  const handleEdit = (event: Event) => {
     setSelectedEvent(event);
     setFormData(event);
     setShowModal(true);
   };
 
-  // Фільтрований список подій
   const filteredEvents = events.filter((event) => {
     const yearMatch = !filterYear || event.date.includes(filterYear);
     const typeMatch =
@@ -101,7 +116,6 @@ const TimelineModule: React.FC = () => {
     return yearMatch && typeMatch;
   });
 
-  // Визначення іконки за типом події
   const getEventIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case "битва":
@@ -129,7 +143,6 @@ const TimelineModule: React.FC = () => {
       >
         Додати подію
       </Button>
-      {/* Фільтри */}
       <div className="mb-3 d-flex gap-3">
         <input
           type="text"
@@ -296,6 +309,8 @@ const TimelineModule: React.FC = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <NotesModule onEventSaved={onNoteSaved} />
     </div>
   );
 };
