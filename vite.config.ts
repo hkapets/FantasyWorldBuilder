@@ -9,4 +9,7 @@ export default defineConfig({
       overlay: true,
     },
   },
+  resolve: {
+    extensions: [".js", ".ts", ".jsx", ".tsx"], // Явно вказуємо розширення
+  },
 });

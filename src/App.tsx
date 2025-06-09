@@ -10,17 +10,16 @@ import SearchModule from "./components/SearchModule/SearchModule";
 import ImportExportModule from "./components/ImportExportModule/ImportExportModule";
 import TestModule from "./components/TestModule/TestModule";
 
-// Інтерфейс для типізації вкладок
 interface Tab {
   name: string;
   component: React.FC;
 }
 
-const App: React.FC = () => {
+const App = () => {
+  // Знято React.FC для уникнення конфлікту
   const [activeTab, setActiveTab] = useState<string>("Лор");
-  const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(true); // Стан звуку
+  const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(true);
 
-  // Масив вкладок у заданому порядку з українськими назвами
   const tabs: Tab[] = [
     { name: "Лор", component: LoreModule },
     { name: "Персонажі", component: CharactersModule },
@@ -36,12 +35,10 @@ const App: React.FC = () => {
 
   const ActiveComponent = tabs.find((tab) => tab.name === activeTab)?.component;
 
-  // Refs для аудіо
   const buttonSoundRef = useRef<HTMLAudioElement>(null);
   const pageTurnSoundRef = useRef<HTMLAudioElement>(null);
   const backgroundMusicRef = useRef<HTMLAudioElement>(null);
 
-  // Список треків
   const backgroundTracks = [
     "/audio/Mythic Pulse.mp3",
     "/audio/Epiphany.mp3",
@@ -58,9 +55,8 @@ const App: React.FC = () => {
   ];
 
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
-  const [hasUserInteracted, setHasUserInteracted] = useState<boolean>(false); // Стан взаємодії
+  const [hasUserInteracted, setHasUserInteracted] = useState<boolean>(false);
 
-  // Функція для відтворення звуку кнопки
   const playButtonSound = () => {
     if (isSoundEnabled && buttonSoundRef.current) {
       buttonSoundRef.current.currentTime = 0;
@@ -72,7 +68,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Функція для відтворення звуку гортання
   const playPageTurnSound = () => {
     if (isSoundEnabled && pageTurnSoundRef.current) {
       pageTurnSoundRef.current.currentTime = 0;
@@ -84,11 +79,10 @@ const App: React.FC = () => {
     }
   };
 
-  // Ефект для управління фоновою музикою
   useEffect(() => {
     if (isSoundEnabled && hasUserInteracted && backgroundMusicRef.current) {
       backgroundMusicRef.current.src = backgroundTracks[currentTrackIndex];
-      backgroundMusicRef.current.volume = 0.3; // Низька гучність
+      backgroundMusicRef.current.volume = 0.3;
       backgroundMusicRef.current
         .play()
         .catch((error) =>
@@ -116,7 +110,6 @@ const App: React.FC = () => {
     }
   }, [isSoundEnabled, hasUserInteracted, currentTrackIndex]);
 
-  // Обробка першої взаємодії
   const handleUserInteraction = () => {
     if (!hasUserInteracted) {
       setHasUserInteracted(true);
@@ -129,7 +122,6 @@ const App: React.FC = () => {
       onClick={handleUserInteraction}
       onChange={handleUserInteraction}
     >
-      {/* Аудіо елементи */}
       <audio
         ref={buttonSoundRef}
         src="/audio/quill-button.wav"
@@ -142,7 +134,6 @@ const App: React.FC = () => {
       />
       <audio ref={backgroundMusicRef} preload="auto" />
 
-      {/* Навігаційна панель */}
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
         <div className="container-fluid">
           <a className="navbar-brand" href="#">
@@ -180,7 +171,6 @@ const App: React.FC = () => {
                 </li>
               ))}
             </ul>
-            {/* Кнопка вимикання звуку справа */}
             <div className="form-check form-switch ms-auto">
               <input
                 className="form-check-input"
@@ -200,7 +190,6 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* Контейнер для вмісту вкладок */}
       <div className="container mt-4">
         <h2 className="text-center mb-4">
           Ласкаво просимо до модуля {activeTab}!
