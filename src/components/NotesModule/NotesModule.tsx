@@ -6,6 +6,9 @@ import {
   MdLandscape,
   MdHistory,
   MdPushPin,
+  MdDomain,
+  MdMilitaryTech,
+  MdDelete,
 } from "react-icons/md";
 
 interface Note {
@@ -42,8 +45,15 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
     relatedEvent: "",
     isPinned: false,
   });
+  const [error, setError] = useState<string>("");
+  const [filterCategory, setFilterCategory] = useState<string>("");
 
   const handleSave = () => {
+    if (!formData.category.trim()) {
+      setError("Категорія є обов'язковою!");
+      return;
+    }
+    setError("");
     const newNote = { ...formData, id: Date.now() };
     if (selectedNote) {
       setNotes(
@@ -72,6 +82,12 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
     setShowModal(true);
   };
 
+  const handleDelete = (id: number) => {
+    if (window.confirm("Ви впевнені, що хочете видалити цю нотатку?")) {
+      setNotes(notes.filter((note) => note.id !== id));
+    }
+  };
+
   const togglePin = (id: number) => {
     setNotes(
       notes.map((note) =>
@@ -88,49 +104,83 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
         return <MdLandscape />;
       case "подія":
         return <MdHistory />;
+      case "організація":
+        return <MdDomain />;
+      case "міфологія":
+        return <MdNote />;
+      case "предмет":
+        return <MdPushPin />;
+      case "конфлікт":
+        return <MdMilitaryTech />;
       default:
         return <MdNote />;
     }
   };
 
-  const sortedNotes = [...notes].sort((a, b) =>
+  const filteredNotes = filterCategory
+    ? notes.filter((note) =>
+        note.category.toLowerCase().includes(filterCategory.toLowerCase())
+      )
+    : notes;
+  const sortedNotes = [...filteredNotes].sort((a, b) =>
     a.isPinned === b.isPinned ? 0 : a.isPinned ? -1 : 1
   );
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Нотатки</h2>
-      <Button
-        variant="primary"
-        onClick={() => setShowModal(true)}
-        className="mb-4"
-      >
-        Додати нотатку
-      </Button>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="p-3 container mx-auto">
+      <h2 className="display-6 fw-bold mb-3">Нотатки</h2>
+      <div className="mb-3 d-flex justify-content-between align-items-center">
+        <Button
+          variant="primary"
+          onClick={() => setShowModal(true)}
+          className="mb-3"
+        >
+          Додати нотатку
+        </Button>
+        <Form.Group>
+          <Form.Control
+            type="text"
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            placeholder="Фільтр за категорією"
+            className="w-50 p-2 bg-light text-dark border border-secondary"
+            style={{ minWidth: "200px" }} // Додано мінімальну ширину
+          />
+        </Form.Group>
+      </div>
+      <div className="row row-cols-1 row-cols-md-2 g-4">
         {sortedNotes.map((note) => (
           <div
             key={note.id}
-            className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+            className="bg-light p-3 rounded shadow-sm hover-shadow-lg transition-shadow"
           >
-            <div className="flex justify-between items-start">
-              <div className="flex items-center">
+            <div className="d-flex justify-content-between align-items-start">
+              <div className="d-flex align-items-center">
                 {getCategoryIcon(note.category)}
-                <h5 className="ml-2 text-lg font-semibold">{note.title}</h5>
+                <h5 className="ms-2 fs-5 fw-semibold">{note.title}</h5>
               </div>
-              <Button
-                variant="light"
-                onClick={() => togglePin(note.id!)}
-                className="ml-2"
-              >
-                <MdPushPin color={note.isPinned ? "#e9c46a" : "#4a2c2a"} />
-              </Button>
+              <div>
+                <Button
+                  variant="light"
+                  onClick={() => togglePin(note.id!)}
+                  className="me-2"
+                >
+                  <MdPushPin color={note.isPinned ? "#e9c46a" : "#4a2c2a"} />
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => handleDelete(note.id!)}
+                  className="ms-2"
+                >
+                  <MdDelete />
+                </Button>
+              </div>
             </div>
-            <p className="mt-2 text-gray-600">{note.text}</p>
+            <p className="mt-2 text-muted">{note.text}</p>
             <Button
               variant="link"
               onClick={() => handleEdit(note)}
-              className="mt-2 text-blue-500"
+              className="mt-2 text-primary"
             >
               Редагувати
             </Button>
@@ -167,17 +217,27 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
             <Form.Group className="mb-3">
               <Form.Label>Категорія</Form.Label>
               <Form.Control
-                as="select"
+                type="text"
+                list="categoryOptions"
                 value={formData.category}
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
                 }
-              >
-                <option value="">Оберіть категорію</option>
-                <option value="Персонаж">Персонаж</option>
-                <option value="Локація">Локація</option>
-                <option value="Подія">Подія</option>
-              </Form.Control>
+                placeholder="Введіть або виберіть категорію"
+                isInvalid={!!error}
+              />
+              <datalist id="categoryOptions">
+                <option value="Персонаж" />
+                <option value="Локація" />
+                <option value="Подія" />
+                <option value="Організація" />
+                <option value="Міфологія" />
+                <option value="Предмет" />
+                <option value="Конфлікт" />
+              </datalist>
+              <Form.Control.Feedback type="invalid">
+                {error}
+              </Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Теги</Form.Label>
