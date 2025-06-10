@@ -10,6 +10,6 @@ export default defineConfig({
     },
   },
   resolve: {
-    extensions: [".js", ".ts", ".jsx", ".tsx"], // Явно вказуємо розширення
+    extensions: [".js", ".ts", ".jsx", ".tsx"],
   },
 });
