@@ -10,9 +10,7 @@ import {
   MdEdit,
   MdRemoveCircle,
 } from "react-icons/md";
-import { List } from "react-virtualized";
 import NotesModule, { Note, Event } from "../NotesModule/NotesModule";
-import "react-virtualized/styles.css"; // Стилі для react-virtualized
 
 interface TimelineModuleProps {
   onNoteSaved?: (note: Note) => void;
@@ -37,7 +35,7 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
     const savedId = localStorage.getItem("selectedTimelineId");
     return savedId ? parseInt(savedId) : timelines[0]?.id || Date.now();
   });
-  const [showModal, setShowModal] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
   const [formData, setFormData] = useState<Event>({
     id: 0,
     date: "",
@@ -52,7 +50,16 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
   const [editEventId, setEditEventId] = useState<number | null>(null);
   const [newTimelineName, setNewTimelineName] = useState<string>("");
   const [scale, setScale] = useState<number>(1);
-  const [filterCategory, setFilterCategory] = useState<string>("");
+  const [filterType, setFilterType] = useState<string>("");
+
+  const eventTypeColors: { [key: string]: string } = {
+    Битва: "#ff6347",
+    Народження: "#98fb98",
+    "Створення держав": "#87ceeb",
+    "Зникнення держав": "#dda0dd",
+    "Магічна подія": "#ffa500",
+    Користувацький: "#b19cd9",
+  };
 
   useEffect(() => {
     console.log("Timelines updated:", timelines);
@@ -63,7 +70,7 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
   const selectedTimeline =
     timelines.find((t) => t.id === selectedTimelineId) || timelines[0];
 
-  const handleSaveOrEdit = () => {
+  const handleSaveOrEditEvent = () => {
     if (!formData.date.trim()) {
       alert("Будь ласка, введіть дату!");
       return;
@@ -82,7 +89,7 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
           : t
       )
     );
-    setShowModal(false);
+    setShowEventModal(false);
     setFormData({
       id: 0,
       date: "",
@@ -100,7 +107,7 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
   const handleEditEvent = (event: Event) => {
     setEditEventId(event.id);
     setFormData(event);
-    setShowModal(true);
+    setShowEventModal(true);
   };
 
   const handleDeleteEvent = (eventId: number) => {
@@ -149,17 +156,16 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
     }
   };
 
-  // Обчислення позиції для кожної події
   const getPositionBasedOnDate = (
     date: string,
     minDate: number,
-    maxDate: number,
-    totalEvents: number
+    maxDate: number
   ) => {
     const eventDate = Math.max(1, parseInt(date, 10) || 1);
-    const range = Math.max(1, maxDate - minDate);
-    const basePosition = ((eventDate - minDate) / range) * 95; // Розподіл по 95% простору
-    return basePosition;
+    const range = Math.max(1, maxDate - 1);
+    const basePosition =
+      eventDate === 1 ? 0.5 : Math.round(((eventDate - 1) / range) * 99) + 0.5;
+    return Math.min(basePosition, 99.5);
   };
 
   const dates = selectedTimeline.events.map(
@@ -167,109 +173,21 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
   );
   const minDate = Math.min(...dates, 1);
   const maxDate = Math.max(...dates);
-  const dynamicWidth = Math.max(1500, (maxDate - minDate + 1) * 20);
+  const dynamicWidth = Math.max(1200, (maxDate - minDate + 1) * 80);
 
-  // Конфігурація для react-virtualized List
-  const listRef = useRef<List>(null);
-  const rowRenderer = ({
-    index,
-    key,
-    style,
-  }: {
-    index: number;
-    key: string;
-    style: React.CSSProperties;
-  }) => {
-    const event = selectedTimeline.events[index];
-    const position = getPositionBasedOnDate(
-      event.date,
-      minDate,
-      maxDate,
-      selectedTimeline.events.length
-    );
-    console.log(
-      `Rendering event ${index}: ${event.date} - ${event.title} at ${position}%`
-    );
+  const sortedEvents = [...selectedTimeline.events].sort(
+    (a, b) => parseInt(a.date, 10) - parseInt(b.date, 10)
+  );
 
-    return (
-      <div
-        key={key}
-        style={{
-          ...style,
-          position: "absolute",
-          left: `${position}%`,
-          top: 0,
-          height: "100%",
-          width: `${100 / selectedTimeline.events.length}%`, // Ширина пропорційна кількості подій
-          border: "1px solid red", // Тимчасова рамка для діагностики
-          zIndex: 2,
-        }}
-      >
-        <div
-          className="position-relative"
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <div
-            className="timeline-connector"
-            style={{
-              position: "absolute",
-              width: "2px",
-              height: "150px",
-              backgroundColor: "#6b4e9a",
-              top: index % 2 === 0 ? "-150px" : "0",
-              left: "0",
-              transform: "translateX(-50%)",
-              zIndex: 0,
-            }}
-          />
-          <div
-            className="timeline-data position-relative"
-            onClick={() => handleEditEvent(event)}
-            style={{
-              padding: "15px 25px",
-              fontSize: "18px",
-              backgroundColor: index % 2 === 0 ? "#4a2c5a" : "#6b4e9a",
-              color: "white",
-              borderRadius: "8px",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.5)",
-              top: index % 2 === 0 ? "-100px" : "40px", // Скорочено top для видимості
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)",
-              whiteSpace: "normal",
-              minWidth: "150px",
-              zIndex: 3,
-            }}
-          >
-            {event.date} - {event.title}
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteEvent(event.id);
-              }}
-              style={{
-                position: "absolute",
-                top: "5px",
-                right: "5px",
-                backgroundColor: "#8b0000",
-                border: "none",
-                zIndex: 4,
-              }}
-            >
-              <MdDelete />
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const uniqueEventTypes = Array.from(
+    new Set(selectedTimeline.events.map((event) => event.type))
+  );
+
+  const filteredEvents = filterType
+    ? sortedEvents.filter(
+        (event) => event.type.toLowerCase() === filterType.toLowerCase()
+      )
+    : sortedEvents;
 
   return (
     <div
@@ -345,7 +263,7 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
             variant="primary"
             onClick={() => {
               setEditEventId(null);
-              setShowModal(true);
+              setShowEventModal(true);
             }}
             className="ms-2"
             style={{ backgroundColor: "#6b4e9a", border: "none" }}
@@ -364,39 +282,38 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
         />
       </div>
       <div className="mb-3">
-        <Button
-          variant="primary"
-          onClick={() => setShowModal(true)}
-          className="mb-3"
-          style={{ backgroundColor: "#6b4e9a", border: "none" }}
-        >
-          Додати нотатку
-        </Button>
         <Form.Group>
           <Form.Control
-            type="text"
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            placeholder="Фільтр за категорією"
-            className="w-50 p-2 bg-light text-dark border border-secondary"
+            as="select"
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
             style={{
               minWidth: "200px",
               backgroundColor: "#4a2c5a",
               color: "white",
               border: "1px solid #6b4e9a",
             }}
-          />
+          >
+            <option value="">Всі типи</option>
+            {uniqueEventTypes.map((type) => (
+              <option
+                key={type}
+                value={type}
+                style={{ backgroundColor: "#4a2c5a", color: "white" }}
+              >
+                {type}
+              </option>
+            ))}
+          </Form.Control>
         </Form.Group>
-        <NotesModule
-          events={selectedTimeline.events}
-          onNoteSaved={onNoteSaved}
-          filterCategory={filterCategory}
-        />
+        <NotesModule events={filteredEvents} onNoteSaved={onNoteSaved} />
       </div>
+
+      {/* ОСНОВНА ХРОНОЛОГІЯ */}
       <div
-        className="timeline position-relative"
+        className="timeline-container"
         style={{
-          height: "500px",
+          height: "600px",
           transform: `scale(${scale})`,
           transformOrigin: "top left",
           backgroundColor: "#2c1e3a",
@@ -404,38 +321,162 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
           borderRadius: "5px",
           overflowX: "auto",
           overflowY: "hidden",
-          whiteSpace: "nowrap",
           minWidth: `${dynamicWidth}px`,
-          maxWidth: "100%",
+          width: "100%",
           position: "relative",
         }}
       >
+        {/* Горизонтальна лінія по центру */}
         <div
-          className="timeline-line position-absolute top-50 start-0"
+          className="timeline-line"
           style={{
+            position: "absolute",
+            top: "50%",
+            left: "0",
+            right: "0",
             height: "4px",
             backgroundColor: "#6b4e9a",
             transform: "translateY(-50%)",
-            width: `${dynamicWidth}px`,
             zIndex: 1,
           }}
         />
-        <List
-          ref={listRef}
-          width={dynamicWidth}
-          height={500}
-          rowCount={selectedTimeline.events.length}
-          rowHeight={500} // Змінено на висоту контейнера для горизонтального відображення
-          rowRenderer={rowRenderer}
-          style={{ position: "relative", top: 0, left: 0, width: "100%" }}
-          overscanRowCount={10}
-          horizontal={true}
-        />
+
+        {/* Події */}
+        {filteredEvents.map((event, index) => {
+          const eventDate = parseInt(event.date, 10) || 1;
+          const position = getPositionBasedOnDate(event.date, minDate, maxDate);
+          const isOdd = eventDate % 2 === 1;
+          const eventColor =
+            eventTypeColors[event.type] || eventTypeColors["Користувацький"];
+
+          console.log(
+            `Подія ${event.date}: ${
+              isOdd ? "над лінією" : "під лінією"
+            } at ${position}%`
+          );
+
+          return (
+            <div
+              key={event.id}
+              className="timeline-event"
+              style={{
+                position: "absolute",
+                left: `${position}%`,
+                top: "50%",
+                transform: "translateX(-50%)",
+                zIndex: 2,
+              }}
+            >
+              {/* Вертикальний конектор */}
+              <div
+                className="timeline-connector"
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: isOdd ? "-100px" : "2px",
+                  width: "3px",
+                  height: "100px",
+                  backgroundColor: eventColor,
+                  transform: "translateX(-50%)",
+                  zIndex: 1,
+                }}
+              />
+
+              {/* Картка з подією */}
+              <div
+                className="timeline-event-card"
+                onClick={() => handleEditEvent(event)}
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: isOdd ? "-150px" : "52px",
+                  transform: "translateX(-50%)",
+                  padding: "12px 20px",
+                  backgroundColor: eventColor,
+                  color: "white",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                  minWidth: "180px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  border: `2px solid ${eventColor}`,
+                  transition: "all 0.3s ease",
+                  zIndex: 3,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform =
+                    "translateX(-50%) scale(1.05)";
+                  e.currentTarget.style.boxShadow =
+                    "0 6px 20px rgba(0, 0, 0, 0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(-50%) scale(1)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(0, 0, 0, 0.3)";
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    marginBottom: "4px",
+                  }}
+                >
+                  {event.date}
+                </div>
+                <div style={{ fontSize: "12px", lineHeight: "1.3" }}>
+                  {event.title}
+                </div>
+
+                {/* Кнопка видалення */}
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteEvent(event.id);
+                  }}
+                  style={{
+                    position: "absolute",
+                    top: "4px",
+                    right: "4px",
+                    backgroundColor: "#dc3545",
+                    border: "none",
+                    padding: "2px 6px",
+                    fontSize: "10px",
+                    borderRadius: "3px",
+                    zIndex: 4,
+                  }}
+                >
+                  <MdDelete />
+                </Button>
+              </div>
+
+              {/* Точка на лінії */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "-4px",
+                  width: "8px",
+                  height: "8px",
+                  backgroundColor: eventColor,
+                  borderRadius: "50%",
+                  transform: "translateX(-50%)",
+                  border: "2px solid #ffffff",
+                  zIndex: 2,
+                }}
+              />
+            </div>
+          );
+        })}
       </div>
+
+      {/* МОДАЛЬНЕ ВІКНО ДЛЯ ПОДІЙ */}
       <Modal
-        show={showModal}
+        show={showEventModal}
         onHide={() => {
-          setShowModal(false);
+          setShowEventModal(false);
           setEditEventId(null);
         }}
         style={{ backgroundColor: "#2c1e3a" }}
@@ -556,6 +597,19 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
             <Form.Group className="mb-3">
               <Form.Label>Тип</Form.Label>
               <Form.Control
+                type="text"
+                value={formData.type}
+                onChange={(e) =>
+                  setFormData({ ...formData, type: e.target.value })
+                }
+                placeholder="Введіть тип або виберіть із списку"
+                style={{
+                  backgroundColor: "#4a2c5a",
+                  color: "white",
+                  border: "1px solid #6b4e9a",
+                }}
+              />
+              <Form.Control
                 as="select"
                 value={formData.type}
                 onChange={(e) =>
@@ -565,6 +619,7 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
                   backgroundColor: "#4a2c5a",
                   color: "white",
                   border: "1px solid #6b4e9a",
+                  marginTop: "5px",
                 }}
               >
                 <option value="">Оберіть тип</option>
@@ -581,7 +636,7 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
           <Button
             variant="secondary"
             onClick={() => {
-              setShowModal(false);
+              setShowEventModal(false);
               setEditEventId(null);
             }}
             style={{ backgroundColor: "#8b0000", border: "none" }}
@@ -590,7 +645,7 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
           </Button>
           <Button
             variant="primary"
-            onClick={handleSaveOrEdit}
+            onClick={handleSaveOrEditEvent}
             style={{ backgroundColor: "#6b4e9a", border: "none" }}
           >
             {editEventId ? "Зберегти зміни" : "Зберегти"}
