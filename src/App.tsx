@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import LoreModule from "./components/LoreModule/LoreModule";
 import CharactersModule from "./components/CharactersModule/CharactersModule";
 import RelationshipsModule from "./components/RelationshipsModule/RelationshipsModule";
-import TimelineModule from "./components/TimelineModule/TimelineModule";
+import TimelineModule, {
+  getTimelineEvents,
+} from "./components/TimelineModule/TimelineModule";
 import MapModule from "./components/MapModule/MapModule";
-import NotesModule, { Note } from "./components/NotesModule/NotesModule"; // Імпортуємо з типами
+import NotesModule, { Note, Event } from "./components/NotesModule/NotesModule"; // Імпортуємо з типами
 import TemplatesModule from "./components/TemplatesModule/TemplatesModule";
 import SearchModule from "./components/SearchModule/SearchModule";
 import ImportExportModule from "./components/ImportExportModule/ImportExportModule";
@@ -22,6 +24,7 @@ interface TimelineModuleProps {
 const App = () => {
   const [activeTab, setActiveTab] = useState<string>("Лор");
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(true);
+  const [timelineEvents, setTimelineEvents] = useState<Event[]>([]); // Стан для подій
 
   const tabs: Tab[] = [
     { name: "Лор", component: LoreModule },
@@ -119,6 +122,33 @@ const App = () => {
     }
   };
 
+  // Оновлення подій із TimelineModule
+  useEffect(() => {
+    const updateTimelineEvents = () => {
+      const events = getTimelineEvents();
+      setTimelineEvents(events);
+    };
+    updateTimelineEvents(); // Початкове оновлення
+    const interval = setInterval(updateTimelineEvents, 1000); // Оновлення кожну секунду
+    return () => clearInterval(interval);
+  }, []);
+
+  // Передача подій із TimelineModule до NotesModule
+  const handleNoteSaved = (note: Note) => {
+    console.log("Note saved:", note);
+    // Логіка збереження нотатки, якщо потрібно
+  };
+
+  const noteCategoryColors = {
+    Персонаж: "#ff9999",
+    Локація: "#99ff99",
+    Подія: "#9999ff",
+    Організація: "#ffcc99",
+    Міфологія: "#cc99ff",
+    Предмет: "#99cccc",
+    Конфлікт: "#ff99cc",
+  };
+
   return (
     <div
       className="min-vh-100 bg-dark text-light"
@@ -198,7 +228,13 @@ const App = () => {
           Ласкаво просимо до модуля {activeTab}!
         </h2>
         <div className="card p-4 shadow-sm bg-secondary">
-          {ActiveComponent && <ActiveComponent />}
+          {ActiveComponent && (
+            <ActiveComponent
+              events={activeTab === "Нотатки" ? timelineEvents : undefined}
+              noteCategoryColors={noteCategoryColors}
+              onNoteSaved={handleNoteSaved}
+            />
+          )}
         </div>
       </div>
     </div>

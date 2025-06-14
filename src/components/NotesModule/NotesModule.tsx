@@ -46,6 +46,7 @@ interface NotesModuleProps {
   externalNotes?: Note[];
   onNoteDeleted?: (noteId: number) => void;
   onNoteUpdated?: (note: Note) => void;
+  noteCategoryColors: { [key: string]: string };
 }
 
 const NotesModule = ({
@@ -55,6 +56,7 @@ const NotesModule = ({
   externalNotes = [],
   onNoteDeleted,
   onNoteUpdated,
+  noteCategoryColors,
 }: NotesModuleProps) => {
   const [notes, setNotes] = useState<Note[]>(() => {
     const savedNotes = localStorage.getItem("notes");
@@ -152,6 +154,13 @@ const NotesModule = ({
     }
   };
 
+  const handleDeleteAllNotes = () => {
+    if (window.confirm("Ви впевнені, що хочете видалити ВСІ нотатки?")) {
+      setNotes([]);
+      localStorage.setItem("notes", JSON.stringify([]));
+    }
+  };
+
   const togglePin = (id: number) => {
     const updatedNotes = notes.map((note) =>
       note.id === id ? { ...note, isPinned: !note.isPinned } : note
@@ -205,33 +214,52 @@ const NotesModule = ({
     <div className="p-3 container mx-auto">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h3 className="text-dark">Нотатки</h3>
-        <Button
-          variant="primary"
-          onClick={() => {
-            setSelectedNote(null);
-            setFormData({
-              id: null,
-              title: "",
-              text: "",
-              category: "",
-              tags: "",
-              dateCreated: new Date().toISOString().split("T")[0],
-              relatedEvent: "",
-              isPinned: false,
-            });
-            setShowModal(true);
-          }}
-          style={{ backgroundColor: "#6b4e9a", border: "none" }}
-        >
-          Додати нотатку
-        </Button>
+        <div>
+          <Button
+            variant="primary"
+            onClick={() => {
+              setSelectedNote(null);
+              setFormData({
+                id: null,
+                title: "",
+                text: "",
+                category: "",
+                tags: "",
+                dateCreated: new Date().toISOString().split("T")[0],
+                relatedEvent: "",
+                isPinned: false,
+              });
+              setShowModal(true);
+            }}
+            style={{ backgroundColor: "#6b4e9a", border: "none" }}
+          >
+            Додати нотатку
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleDeleteAllNotes}
+            className="ms-2"
+            style={{ backgroundColor: "#dc3545", border: "none" }}
+          >
+            Видалити всі нотатки
+          </Button>
+        </div>
       </div>
 
       <div className="row row-cols-1 row-cols-md-2 g-4">
         {sortedNotes.length > 0 ? (
           sortedNotes.map((note) => (
             <div key={note.id} className="col">
-              <div className="card h-100 shadow-sm">
+              <div
+                className="card h-100 shadow-sm"
+                style={{
+                  backgroundColor:
+                    noteCategoryColors[note.category] || "#f0f0f0",
+                  borderLeft: `4px solid ${
+                    noteCategoryColors[note.category] || "#ccc"
+                  }`,
+                }}
+              >
                 <div className="card-body">
                   <div className="d-flex justify-content-between align-items-start mb-2">
                     <div className="d-flex align-items-center">
@@ -354,16 +382,20 @@ const NotesModule = ({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    relatedEvent: Number(e.target.value) || "",
+                    relatedEvent: e.target.value || "",
                   })
                 }
               >
                 <option value="">Оберіть подію</option>
-                {events?.map((event) => (
-                  <option key={event.id} value={event.id}>
-                    {event.title} ({event.date})
-                  </option>
-                ))}
+                {Array.isArray(events) && events.length > 0 ? (
+                  events.map((event) => (
+                    <option key={event.id} value={event.id}>
+                      {event.title} ({event.date})
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>Немає доступних подій</option>
+                )}
               </Form.Control>
             </Form.Group>
             <Form.Group className="mb-3">

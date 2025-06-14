@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import {
   MdMilitaryTech,
@@ -7,13 +7,19 @@ import {
   MdDomainDisabled,
   MdOutlineAutoAwesome,
   MdDelete,
-  MdEdit,
   MdRemoveCircle,
 } from "react-icons/md";
-import NotesModule, { Note, Event } from "../NotesModule/NotesModule";
 
-interface TimelineModuleProps {
-  onNoteSaved?: (note: Note) => void;
+interface Event {
+  id: number;
+  date: string;
+  title: string;
+  description: string;
+  location: string;
+  relatedCharacters: string;
+  type: string;
+  era?: string;
+  age?: string;
 }
 
 interface Timeline {
@@ -22,7 +28,20 @@ interface Timeline {
   name: string;
 }
 
-const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
+// Функція для отримання подій на верхньому рівні
+export const getTimelineEvents = (): Event[] => {
+  const savedTimelines = localStorage.getItem("timelines");
+  const timelines = savedTimelines ? JSON.parse(savedTimelines) : [];
+  const selectedTimelineId = parseInt(
+    localStorage.getItem("selectedTimelineId") || "0"
+  );
+  const selectedTimeline = timelines.find(
+    (t: any) => t.id === selectedTimelineId
+  ) || { events: [] };
+  return selectedTimeline.events || [];
+};
+
+const TimelineModule = () => {
   const [timelines, setTimelines] = useState<Timeline[]>(() => {
     const savedTimelines = localStorage.getItem("timelines");
     const initialTimelines = savedTimelines
@@ -117,6 +136,20 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
           t.id === selectedTimelineId
             ? { ...t, events: t.events.filter((e) => e.id !== eventId) }
             : t
+        )
+      );
+    }
+  };
+
+  const handleDeleteAllEvents = () => {
+    if (
+      window.confirm(
+        "Ви впевнені, що хочете видалити ВСІ події у цій хронології?"
+      )
+    ) {
+      setTimelines(
+        timelines.map((t) =>
+          t.id === selectedTimelineId ? { ...t, events: [] } : t
         )
       );
     }
@@ -270,16 +303,26 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
           >
             Додати подію
           </Button>
+          <Button
+            variant="danger"
+            onClick={handleDeleteAllEvents}
+            className="ms-2"
+            style={{ backgroundColor: "#dc3545", border: "none" }}
+          >
+            Видалити всі події
+          </Button>
         </div>
-        <Form.Range
-          value={scale}
-          onChange={(e) => setScale(Number(e.target.value))}
-          min="0.5"
-          max="2"
-          step="0.1"
-          className="w-25"
-          style={{ backgroundColor: "#4a2c5a", border: "1px solid #6b4e9a" }}
-        />
+        <div>
+          <Form.Range
+            value={scale}
+            onChange={(e) => setScale(Number(e.target.value))}
+            min="0.5"
+            max="2"
+            step="0.1"
+            className="w-25"
+            style={{ backgroundColor: "#4a2c5a", border: "1px solid #6b4e9a" }}
+          />
+        </div>
       </div>
       <div className="mb-3">
         <Form.Group>
@@ -306,7 +349,6 @@ const TimelineModule = ({ onNoteSaved }: TimelineModuleProps) => {
             ))}
           </Form.Control>
         </Form.Group>
-        <NotesModule events={filteredEvents} onNoteSaved={onNoteSaved} />
       </div>
 
       {/* ОСНОВНА ХРОНОЛОГІЯ */}
