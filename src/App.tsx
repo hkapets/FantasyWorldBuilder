@@ -4,7 +4,7 @@ import CharactersModule from "./components/CharactersModule/CharactersModule";
 import RelationshipsModule from "./components/RelationshipsModule/RelationshipsModule";
 import TimelineModule from "./components/TimelineModule/TimelineModule";
 import MapModule from "./components/MapModule/MapModule";
-import NotesModule from "./components/NotesModule/NotesModule";
+import NotesModule, { Note } from "./components/NotesModule/NotesModule"; // Імпортуємо з типами
 import TemplatesModule from "./components/TemplatesModule/TemplatesModule";
 import SearchModule from "./components/SearchModule/SearchModule";
 import ImportExportModule from "./components/ImportExportModule/ImportExportModule";
@@ -12,11 +12,14 @@ import TestModule from "./components/TestModule/TestModule";
 
 interface Tab {
   name: string;
-  component: React.FC;
+  component: React.FC<any>; // Гнучкий тип для компонентів
+}
+
+interface TimelineModuleProps {
+  onNoteSaved?: (note: Note) => void;
 }
 
 const App = () => {
-  // Знято React.FC для уникнення конфлікту
   const [activeTab, setActiveTab] = useState<string>("Лор");
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(true);
 

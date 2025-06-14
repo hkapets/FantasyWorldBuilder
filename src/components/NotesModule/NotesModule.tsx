@@ -18,7 +18,7 @@ interface Note {
   category: string;
   tags: string;
   dateCreated: string;
-  relatedEvent: string;
+  relatedEvent: string | number;
   isPinned: boolean;
   date?: string;
   description?: string;
@@ -27,12 +27,33 @@ interface Note {
   type?: string;
 }
 
-interface NotesModuleProps {
-  onEventSaved?: (note: Note) => void;
+interface Event {
+  id: number;
+  date: string;
+  title: string;
+  description: string;
+  location: string;
+  relatedCharacters: string;
+  type: string;
+  era?: string;
+  age?: string;
 }
 
-const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
-  const [notes, setNotes] = useState<Note[]>([]);
+interface NotesModuleProps {
+  events?: Event[];
+  onNoteSaved?: (note: Note) => void;
+  filterCategory?: string;
+}
+
+const NotesModule = ({
+  events = [],
+  onNoteSaved,
+  filterCategory,
+}: NotesModuleProps) => {
+  const [notes, setNotes] = useState<Note[]>(() => {
+    const savedNotes = localStorage.getItem("notes");
+    return savedNotes ? JSON.parse(savedNotes) : [];
+  });
   const [showModal, setShowModal] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [formData, setFormData] = useState<Note>({
@@ -46,7 +67,11 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
     isPinned: false,
   });
   const [error, setError] = useState<string>("");
-  const [filterCategory, setFilterCategory] = useState<string>("");
+
+  useEffect(() => {
+    console.log("Events received in NotesModule:", events);
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }, [notes, events]);
 
   const handleSave = () => {
     if (!formData.category.trim()) {
@@ -62,7 +87,7 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
     } else {
       setNotes([...notes, newNote]);
     }
-    if (onEventSaved) onEventSaved(newNote);
+    if (onNoteSaved) onNoteSaved(newNote);
     setShowModal(false);
     setFormData({
       ...formData,
@@ -128,64 +153,48 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
 
   return (
     <div className="p-3 container mx-auto">
-      <h2 className="display-6 fw-bold mb-3">Нотатки</h2>
-      <div className="mb-3 d-flex justify-content-between align-items-center">
-        <Button
-          variant="primary"
-          onClick={() => setShowModal(true)}
-          className="mb-3"
-        >
-          Додати нотатку
-        </Button>
-        <Form.Group>
-          <Form.Control
-            type="text"
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            placeholder="Фільтр за категорією"
-            className="w-50 p-2 bg-light text-dark border border-secondary"
-            style={{ minWidth: "200px" }} // Додано мінімальну ширину
-          />
-        </Form.Group>
-      </div>
       <div className="row row-cols-1 row-cols-md-2 g-4">
-        {sortedNotes.map((note) => (
-          <div
-            key={note.id}
-            className="bg-light p-3 rounded shadow-sm hover-shadow-lg transition-shadow"
-          >
-            <div className="d-flex justify-content-between align-items-start">
-              <div className="d-flex align-items-center">
-                {getCategoryIcon(note.category)}
-                <h5 className="ms-2 fs-5 fw-semibold">{note.title}</h5>
-              </div>
-              <div>
-                <Button
-                  variant="light"
-                  onClick={() => togglePin(note.id!)}
-                  className="me-2"
-                >
-                  <MdPushPin color={note.isPinned ? "#e9c46a" : "#4a2c2a"} />
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => handleDelete(note.id!)}
-                  className="ms-2"
-                >
-                  <MdDelete />
-                </Button>
-              </div>
-            </div>
-            <p className="mt-2 text-muted">{note.text}</p>
-            <Button
-              variant="link"
-              onClick={() => handleEdit(note)}
-              className="mt-2 text-primary"
+        {sortedNotes.length > 0 ? (
+          sortedNotes.map((note) => (
+            <div
+              key={note.id}
+              className="bg-light p-3 rounded shadow-sm hover-shadow-lg transition-shadow"
             >
-              Редагувати
-            </Button>
-          </div>
-        ))}
+              <div className="d-flex justify-content-between align-items-start">
+                <div className="d-flex align-items-center">
+                  {getCategoryIcon(note.category)}
+                  <h5 className="ms-2 fs-5 fw-semibold">{note.title}</h5>
+                </div>
+                <div>
+                  <Button
+                    variant="light"
+                    onClick={() => togglePin(note.id!)}
+                    className="me-2"
+                  >
+                    <MdPushPin color={note.isPinned ? "#e9c46a" : "#4a2c2a"} />
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => handleDelete(note.id!)}
+                    className="ms-2"
+                  >
+                    <MdDelete />
+                  </Button>
+                </div>
+              </div>
+              <p className="mt-2 text-muted">{note.text}</p>
+              <Button
+                variant="link"
+                onClick={() => handleEdit(note)}
+                className="mt-2 text-primary"
+              >
+                Редагувати
+              </Button>
+            </div>
+          ))
+        ) : (
+          <p className="text-muted">Немає нотаток для відображення.</p>
+        )}
       </div>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
@@ -240,20 +249,31 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
               </Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3">
+              <Form.Label>Пов’язана подія</Form.Label>
+              <Form.Control
+                as="select"
+                value={formData.relatedEvent}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    relatedEvent: Number(e.target.value) || "",
+                  })
+                }
+              >
+                <option value="">Оберіть подію</option>
+                {events?.map((event) => (
+                  <option key={event.id} value={event.id}>
+                    {event.title} ({event.date})
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Теги</Form.Label>
               <Form.Control
                 value={formData.tags}
                 onChange={(e) =>
                   setFormData({ ...formData, tags: e.target.value })
-                }
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Пов’язана подія</Form.Label>
-              <Form.Control
-                value={formData.relatedEvent}
-                onChange={(e) =>
-                  setFormData({ ...formData, relatedEvent: e.target.value })
                 }
               />
             </Form.Group>
@@ -273,4 +293,4 @@ const NotesModule = ({ onEventSaved }: NotesModuleProps) => {
 };
 
 export default NotesModule;
-export type { Note };
+export type { Note, Event };
