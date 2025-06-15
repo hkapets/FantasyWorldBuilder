@@ -1,53 +1,182 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-export interface World {
-  id: number;
+export interface Location {
+  id: string;
   name: string;
   description: string;
+  type: "city" | "forest" | "mountain" | "dungeon" | "misc";
+}
+
+export interface Character {
+  id: string;
+  name: string;
+  description: string;
+  role: string;
+}
+
+export interface World {
+  id: string;
+  name: string;
+  description: string;
+  locations: Location[];
+  characters: Character[];
+  notes: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 interface WorldState {
   worlds: World[];
-  selectedWorldId: number | null;
-  isLoading: boolean;
-  error: string | null;
+  currentWorld: World | null;
 }
 
 const initialState: WorldState = {
   worlds: [],
-  selectedWorldId: null,
-  isLoading: false,
-  error: null,
+  currentWorld: null,
 };
 
 const worldSlice = createSlice({
   name: "world",
   initialState,
   reducers: {
-    addWorld: (state, action: PayloadAction<World>) => {
+    createWorld: (state, action: PayloadAction<World>) => {
       state.worlds.push(action.payload);
     },
-    removeWorld: (state, action: PayloadAction<number>) => {
+
+    updateWorld: (
+      state,
+      action: PayloadAction<{ id: string; updates: Partial<World> }>
+    ) => {
+      const { id, updates } = action.payload;
+      const worldIndex = state.worlds.findIndex((world) => world.id === id);
+      if (worldIndex !== -1) {
+        state.worlds[worldIndex] = {
+          ...state.worlds[worldIndex],
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+    },
+
+    deleteWorld: (state, action: PayloadAction<string>) => {
       state.worlds = state.worlds.filter(
         (world) => world.id !== action.payload
       );
-      if (state.selectedWorldId === action.payload) {
-        state.selectedWorldId = null;
+    },
+
+    setCurrentWorld: (state, action: PayloadAction<World | null>) => {
+      state.currentWorld = action.payload;
+    },
+
+    addLocation: (
+      state,
+      action: PayloadAction<{ worldId: string; location: Location }>
+    ) => {
+      const { worldId, location } = action.payload;
+      const world = state.worlds.find((w) => w.id === worldId);
+      if (world) {
+        world.locations.push(location);
+        world.updatedAt = new Date().toISOString();
       }
     },
-    selectWorld: (state, action: PayloadAction<number | null>) => {
-      state.selectedWorldId = action.payload;
+
+    updateLocation: (
+      state,
+      action: PayloadAction<{
+        worldId: string;
+        locationId: string;
+        updates: Partial<Location>;
+      }>
+    ) => {
+      const { worldId, locationId, updates } = action.payload;
+      const world = state.worlds.find((w) => w.id === worldId);
+      if (world) {
+        const locationIndex = world.locations.findIndex(
+          (l) => l.id === locationId
+        );
+        if (locationIndex !== -1) {
+          world.locations[locationIndex] = {
+            ...world.locations[locationIndex],
+            ...updates,
+          };
+          world.updatedAt = new Date().toISOString();
+        }
+      }
     },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
+
+    removeLocation: (
+      state,
+      action: PayloadAction<{ worldId: string; locationId: string }>
+    ) => {
+      const { worldId, locationId } = action.payload;
+      const world = state.worlds.find((w) => w.id === worldId);
+      if (world) {
+        world.locations = world.locations.filter((l) => l.id !== locationId);
+        world.updatedAt = new Date().toISOString();
+      }
     },
-    setError: (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
+
+    addCharacter: (
+      state,
+      action: PayloadAction<{ worldId: string; character: Character }>
+    ) => {
+      const { worldId, character } = action.payload;
+      const world = state.worlds.find((w) => w.id === worldId);
+      if (world) {
+        world.characters.push(character);
+        world.updatedAt = new Date().toISOString();
+      }
+    },
+
+    updateCharacter: (
+      state,
+      action: PayloadAction<{
+        worldId: string;
+        characterId: string;
+        updates: Partial<Character>;
+      }>
+    ) => {
+      const { worldId, characterId, updates } = action.payload;
+      const world = state.worlds.find((w) => w.id === worldId);
+      if (world) {
+        const characterIndex = world.characters.findIndex(
+          (c) => c.id === characterId
+        );
+        if (characterIndex !== -1) {
+          world.characters[characterIndex] = {
+            ...world.characters[characterIndex],
+            ...updates,
+          };
+          world.updatedAt = new Date().toISOString();
+        }
+      }
+    },
+
+    removeCharacter: (
+      state,
+      action: PayloadAction<{ worldId: string; characterId: string }>
+    ) => {
+      const { worldId, characterId } = action.payload;
+      const world = state.worlds.find((w) => w.id === worldId);
+      if (world) {
+        world.characters = world.characters.filter((c) => c.id !== characterId);
+        world.updatedAt = new Date().toISOString();
+      }
     },
   },
 });
 
-export const { addWorld, removeWorld, selectWorld, setLoading, setError } =
-  worldSlice.actions;
+export const {
+  createWorld,
+  updateWorld,
+  deleteWorld,
+  setCurrentWorld,
+  addLocation,
+  updateLocation,
+  removeLocation,
+  addCharacter,
+  updateCharacter,
+  removeCharacter,
+} = worldSlice.actions;
+
 export default worldSlice.reducer;

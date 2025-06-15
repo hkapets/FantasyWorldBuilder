@@ -1,25 +1,37 @@
 import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
-import Home from "./components/Home/Home";
-import "bootstrap/dist/css/bootstrap.min.css";
+import Navigation from "./components/Navigation";
+import Home from "./components/Home";
+import WorldList from "./components/WorldList";
+import WorldEditor from "./components/WorldEditor";
 import "./App.css";
 
-const App: React.FC = () => {
+function App() {
   return (
     <Provider store={store}>
-      <div className="App">
-        <nav className="navbar navbar-dark bg-dark">
-          <div className="container-fluid">
-            <span className="navbar-brand mb-0 h1">Fantasy World Builder</span>
-          </div>
-        </nav>
-        <main className="mt-4">
-          <Home />
-        </main>
-      </div>
+      <Router>
+        <div className="App">
+          <Navigation />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/worlds" element={<WorldList />} />
+              <Route path="/world-editor" element={<WorldEditor />} />
+              <Route path="/world-editor/:id" element={<WorldEditor />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
     </Provider>
   );
-};
+}
 
 export default App;

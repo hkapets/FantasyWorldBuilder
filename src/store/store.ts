@@ -1,9 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import worldReducer from "./worldSlice";
+import worldSlice from "./worldSlice";
 
 export const store = configureStore({
   reducer: {
-    world: worldReducer,
+    worldSlice: worldSlice,
   },
 });
 

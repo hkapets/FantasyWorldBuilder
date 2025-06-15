@@ -1,123 +1,81 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { World, addWorld, removeWorld } from "../store/worldSlice";
+import React from "react";
+import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../store/store";
+import { deleteWorld } from "../store/worldSlice";
 
-interface WorldListProps {
-  worlds: World[];
-  selectedWorldId: number | null;
-  onWorldSelect: (worldId: number | null) => void;
-}
-
-const WorldList: React.FC<WorldListProps> = ({
-  worlds,
-  selectedWorldId,
-  onWorldSelect,
-}) => {
+function WorldList() {
+  const worlds = useSelector((state: RootState) => state.worldSlice.worlds);
   const dispatch = useDispatch();
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newWorldName, setNewWorldName] = useState("");
-  const [newWorldDescription, setNewWorldDescription] = useState("");
 
-  const handleCreateWorld = () => {
-    if (newWorldName.trim()) {
-      const newWorld: World = {
-        id: Date.now(), // Простий спосіб генерації ID
-        name: newWorldName.trim(),
-        description: newWorldDescription.trim(),
-        createdAt: new Date().toISOString(),
-      };
-
-      dispatch(addWorld(newWorld));
-      setNewWorldName("");
-      setNewWorldDescription("");
-      setShowCreateForm(false);
-      onWorldSelect(newWorld.id);
-    }
-  };
-
-  const handleDeleteWorld = (worldId: number, event: React.MouseEvent) => {
-    event.stopPropagation(); // Запобігаємо вибору світу при видаленні
+  const handleDeleteWorld = (id: string) => {
     if (window.confirm("Ви впевнені, що хочете видалити цей світ?")) {
-      dispatch(removeWorld(worldId));
+      dispatch(deleteWorld(id));
     }
   };
+
+  if (worlds.length === 0) {
+    return (
+      <div className="world-list-empty">
+        <h2>У вас поки немає створених світів</h2>
+        <p>Почніть створювати свій перший фентезійний світ!</p>
+        <Link to="/world-editor" className="create-world-button">
+          Створити перший світ
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="world-list">
-      <button
-        className="btn btn-primary mb-3"
-        onClick={() => setShowCreateForm(!showCreateForm)}
-      >
-        {showCreateForm ? "Скасувати" : "Створити новий світ"}
-      </button>
+      <div className="world-list-header">
+        <h2>Ваші світи</h2>
+        <Link to="/world-editor" className="create-world-button">
+          Створити новий світ
+        </Link>
+      </div>
 
-      {showCreateForm && (
-        <div className="create-world-form mb-3 p-3 border rounded">
-          <div className="mb-2">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Назва світу"
-              value={newWorldName}
-              onChange={(e) => setNewWorldName(e.target.value)}
-            />
-          </div>
-          <div className="mb-2">
-            <textarea
-              className="form-control"
-              placeholder="Опис світу"
-              value={newWorldDescription}
-              onChange={(e) => setNewWorldDescription(e.target.value)}
-              rows={3}
-            />
-          </div>
-          <button
-            className="btn btn-success"
-            onClick={handleCreateWorld}
-            disabled={!newWorldName.trim()}
-          >
-            Створити
-          </button>
-        </div>
-      )}
-
-      <div className="worlds">
-        {worlds.length === 0 ? (
-          <p className="text-muted">Ще немає створених світів</p>
-        ) : (
-          worlds.map((world) => (
-            <div
-              key={world.id}
-              className={`card mb-2 ${
-                selectedWorldId === world.id ? "border-primary" : ""
-              }`}
-              style={{ cursor: "pointer" }}
-              onClick={() => onWorldSelect(world.id)}
-            >
-              <div className="card-body">
-                <div className="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h5 className="card-title">{world.name}</h5>
-                    <p className="card-text">{world.description}</p>
-                    <small className="text-muted">
-                      Створено: {new Date(world.createdAt).toLocaleDateString()}
-                    </small>
-                  </div>
-                  <button
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={(e) => handleDeleteWorld(world.id, e)}
-                    title="Видалити світ"
-                  >
-                    ×
-                  </button>
-                </div>
+      <div className="worlds-grid">
+        {worlds.map((world) => (
+          <div key={world.id} className="world-card">
+            <div className="world-card-header">
+              <h3>{world.name}</h3>
+              <div className="world-card-actions">
+                <Link
+                  to={`/world-editor/${world.id}`}
+                  className="edit-button"
+                  title="Редагувати світ"
+                >
+                  ✏️
+                </Link>
+                <button
+                  onClick={() => handleDeleteWorld(world.id)}
+                  className="delete-button"
+                  title="Видалити світ"
+                >
+                  🗑️
+                </button>
               </div>
             </div>
-          ))
-        )}
+
+            <p className="world-description">{world.description}</p>
+
+            <div className="world-stats">
+              <span>Локацій: {world.locations?.length || 0}</span>
+              <span>Персонажів: {world.characters?.length || 0}</span>
+            </div>
+
+            <div className="world-card-footer">
+              <small>
+                Створено:{" "}
+                {new Date(world.createdAt).toLocaleDateString("uk-UA")}
+              </small>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
-};
+}
 
 export default WorldList;
