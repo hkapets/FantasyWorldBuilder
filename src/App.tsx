@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import LoreModule from "./components/LoreModule/LoreModule";
 import CharactersModule from "./components/CharactersModule/CharactersModule";
 import RelationshipsModule from "./components/RelationshipsModule/RelationshipsModule";
@@ -6,11 +6,12 @@ import TimelineModule, {
   getTimelineEvents,
 } from "./components/TimelineModule/TimelineModule";
 import MapModule from "./components/MapModule/MapModule";
-import NotesModule, { Note, Event } from "./components/NotesModule/NotesModule"; // Імпортуємо з типами
+import NotesModule, { Note, Event } from "./components/NotesModule/NotesModule";
 import TemplatesModule from "./components/TemplatesModule/TemplatesModule";
 import SearchModule from "./components/SearchModule/SearchModule";
 import ImportExportModule from "./components/ImportExportModule/ImportExportModule";
 import TestModule from "./components/TestModule/TestModule";
+import Home from "./components/Home/Home";
 
 interface Tab {
   name: string;
@@ -21,19 +22,39 @@ interface TimelineModuleProps {
   onNoteSaved?: (note: Note) => void;
 }
 
-const App = () => {
-  const [activeTab, setActiveTab] = useState<string>("Лор");
+const App: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<string>("Дім"); // Змінено на "Дім" як початкову вкладку
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(true);
-  const [timelineEvents, setTimelineEvents] = useState<Event[]>([]); // Стан для подій
+  const [timelineEvents, setTimelineEvents] = useState<Event[]>([]);
+  const [selectedWorldId, setSelectedWorldId] = useState<number | undefined>(
+    JSON.parse(localStorage.getItem("worlds") || "[]")[0]?.id
+  );
 
   const tabs: Tab[] = [
+    {
+      name: "Дім",
+      component: () => (
+        <Home
+          onWorldSelect={setSelectedWorldId}
+          selectedWorldId={selectedWorldId}
+        />
+      ),
+    },
     { name: "Лор", component: LoreModule },
     { name: "Персонажі", component: CharactersModule },
     { name: "Зв’язки", component: RelationshipsModule },
     { name: "Хронологія", component: TimelineModule },
     { name: "Карти", component: MapModule },
     { name: "Нотатки", component: NotesModule },
-    { name: "Шаблони", component: TemplatesModule },
+    {
+      name: "Шаблони",
+      component: () => (
+        <TemplatesModule
+          onWorldCreated={handleWorldCreated}
+          selectedWorldId={selectedWorldId}
+        />
+      ),
+    },
     { name: "Пошук", component: SearchModule },
     { name: "Імпорт/Експорт", component: ImportExportModule },
     { name: "Тести", component: TestModule },
@@ -68,7 +89,7 @@ const App = () => {
       buttonSoundRef.current.currentTime = 0;
       buttonSoundRef.current
         .play()
-        .catch((error) =>
+        .catch((error: Error) =>
           console.warn("Помилка відтворення звуку кнопки:", error)
         );
     }
@@ -79,7 +100,7 @@ const App = () => {
       pageTurnSoundRef.current.currentTime = 0;
       pageTurnSoundRef.current
         .play()
-        .catch((error) =>
+        .catch((error: Error) =>
           console.warn("Помилка відтворення звуку гортання:", error)
         );
     }
@@ -91,13 +112,13 @@ const App = () => {
       backgroundMusicRef.current.volume = 0.3;
       backgroundMusicRef.current
         .play()
-        .catch((error) =>
+        .catch((error: Error) =>
           console.warn("Помилка відтворення фонової музики:", error)
         );
 
       const handleEnded = () => {
         setCurrentTrackIndex(
-          (prevIndex) => (prevIndex + 1) % backgroundTracks.length
+          (prevIndex: number) => (prevIndex + 1) % backgroundTracks.length
         );
       };
 
@@ -122,21 +143,31 @@ const App = () => {
     }
   };
 
-  // Оновлення подій із TimelineModule
+  const handleWorldCreated = (worldData: {
+    id: number;
+    name: string;
+    details: string;
+  }) => {
+    const updatedWorlds = JSON.parse(localStorage.getItem("worlds") || "[]");
+    updatedWorlds.push(worldData);
+    localStorage.setItem("worlds", JSON.stringify(updatedWorlds));
+    setTimeout(() => {
+      setSelectedWorldId(worldData.id);
+    }, 100);
+  };
+
   useEffect(() => {
     const updateTimelineEvents = () => {
-      const events = getTimelineEvents();
-      setTimelineEvents(events);
+      const events = getTimelineEvents(selectedWorldId); // Передаємо selectedWorldId, який може бути undefined
+      setTimelineEvents(events || []); // Додаємо обробку порожнього масиву, якщо events повертає null
     };
-    updateTimelineEvents(); // Початкове оновлення
-    const interval = setInterval(updateTimelineEvents, 1000); // Оновлення кожну секунду
+    updateTimelineEvents();
+    const interval = setInterval(updateTimelineEvents, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedWorldId]);
 
-  // Передача подій із TimelineModule до NotesModule
   const handleNoteSaved = (note: Note) => {
     console.log("Note saved:", note);
-    // Логіка збереження нотатки, якщо потрібно
   };
 
   const noteCategoryColors = {
@@ -233,6 +264,7 @@ const App = () => {
               events={activeTab === "Нотатки" ? timelineEvents : undefined}
               noteCategoryColors={noteCategoryColors}
               onNoteSaved={handleNoteSaved}
+              selectedWorldId={selectedWorldId}
             />
           )}
         </div>

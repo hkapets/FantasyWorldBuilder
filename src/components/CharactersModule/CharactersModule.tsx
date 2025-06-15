@@ -16,7 +16,13 @@ interface Character {
   tags?: string[];
 }
 
-const CharactersModule: React.FC = () => {
+interface CharactersModuleProps {
+  selectedWorldId?: number; // Додано проп для вибраного світу
+}
+
+const CharactersModule: React.FC<CharactersModuleProps> = ({
+  selectedWorldId,
+}) => {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
@@ -40,22 +46,31 @@ const CharactersModule: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("name");
 
-  // Завантаження з localStorage
+  // Завантаження з localStorage для вибраного світу
   useEffect(() => {
-    const savedCharacters = JSON.parse(
-      localStorage.getItem("characters") || "[]"
-    );
-    setCharacters(savedCharacters);
-  }, []);
+    if (selectedWorldId !== undefined) {
+      const storageKey = `characters_${selectedWorldId}`;
+      const savedCharacters = JSON.parse(
+        localStorage.getItem(storageKey) || "[]"
+      );
+      setCharacters(savedCharacters);
+    }
+  }, [selectedWorldId]);
 
-  // Дебounced збереження в localStorage
-  const saveCharacters = useCallback((updatedCharacters: Character[]) => {
-    const debounce = setTimeout(() => {
-      setCharacters(updatedCharacters);
-      localStorage.setItem("characters", JSON.stringify(updatedCharacters));
-    }, 300);
-    return () => clearTimeout(debounce);
-  }, []);
+  // Дебounced збереження в localStorage для вибраного світу
+  const saveCharacters = useCallback(
+    (updatedCharacters: Character[]) => {
+      const debounce = setTimeout(() => {
+        if (selectedWorldId !== undefined) {
+          const storageKey = `characters_${selectedWorldId}`;
+          setCharacters(updatedCharacters);
+          localStorage.setItem(storageKey, JSON.stringify(updatedCharacters));
+        }
+      }, 300);
+      return () => clearTimeout(debounce);
+    },
+    [selectedWorldId]
+  );
 
   // Додавання/редагування персонажа
   const handleSave = () => {

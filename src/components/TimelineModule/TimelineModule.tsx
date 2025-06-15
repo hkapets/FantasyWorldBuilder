@@ -28,12 +28,13 @@ interface Timeline {
   name: string;
 }
 
-// Функція для отримання подій на верхньому рівні
-export const getTimelineEvents = (): Event[] => {
-  const savedTimelines = localStorage.getItem("timelines");
+// Функція для отримання подій на верхньому рівні (оновлена для підтримки світів)
+export const getTimelineEvents = (selectedWorldId?: number): Event[] => {
+  if (!selectedWorldId) return [];
+  const savedTimelines = localStorage.getItem(`timelines_${selectedWorldId}`);
   const timelines = savedTimelines ? JSON.parse(savedTimelines) : [];
   const selectedTimelineId = parseInt(
-    localStorage.getItem("selectedTimelineId") || "0"
+    localStorage.getItem(`selectedTimelineId_${selectedWorldId}`) || "0"
   );
   const selectedTimeline = timelines.find(
     (t: any) => t.id === selectedTimelineId
@@ -41,18 +42,32 @@ export const getTimelineEvents = (): Event[] => {
   return selectedTimeline.events || [];
 };
 
-const TimelineModule = () => {
+interface TimelineModuleProps {
+  selectedWorldId?: number; // Додано проп для вибраного світу
+}
+
+const TimelineModule = ({ selectedWorldId }: TimelineModuleProps) => {
   const [timelines, setTimelines] = useState<Timeline[]>(() => {
-    const savedTimelines = localStorage.getItem("timelines");
-    const initialTimelines = savedTimelines
-      ? JSON.parse(savedTimelines)
-      : [{ id: Date.now(), events: [], name: "Основна хронологія" }];
-    console.log("Initial timelines:", initialTimelines);
-    return initialTimelines;
+    if (selectedWorldId !== undefined) {
+      const savedTimelines = localStorage.getItem(
+        `timelines_${selectedWorldId}`
+      );
+      const initialTimelines = savedTimelines
+        ? JSON.parse(savedTimelines)
+        : [{ id: Date.now(), events: [], name: "Основна хронологія" }];
+      console.log("Initial timelines:", initialTimelines);
+      return initialTimelines;
+    }
+    return [];
   });
   const [selectedTimelineId, setSelectedTimelineId] = useState<number>(() => {
-    const savedId = localStorage.getItem("selectedTimelineId");
-    return savedId ? parseInt(savedId) : timelines[0]?.id || Date.now();
+    if (selectedWorldId !== undefined) {
+      const savedId = localStorage.getItem(
+        `selectedTimelineId_${selectedWorldId}`
+      );
+      return savedId ? parseInt(savedId) : timelines[0]?.id || Date.now();
+    }
+    return Date.now();
   });
   const [showEventModal, setShowEventModal] = useState(false);
   const [formData, setFormData] = useState<Event>({
@@ -81,15 +96,27 @@ const TimelineModule = () => {
   };
 
   useEffect(() => {
-    console.log("Timelines updated:", timelines);
-    localStorage.setItem("timelines", JSON.stringify(timelines));
-    localStorage.setItem("selectedTimelineId", selectedTimelineId.toString());
-  }, [timelines, selectedTimelineId]);
+    if (selectedWorldId !== undefined) {
+      console.log("Timelines updated:", timelines);
+      localStorage.setItem(
+        `timelines_${selectedWorldId}`,
+        JSON.stringify(timelines)
+      );
+      localStorage.setItem(
+        `selectedTimelineId_${selectedWorldId}`,
+        selectedTimelineId.toString()
+      );
+    }
+  }, [timelines, selectedTimelineId, selectedWorldId]);
 
   const selectedTimeline =
     timelines.find((t) => t.id === selectedTimelineId) || timelines[0];
 
   const handleSaveOrEditEvent = () => {
+    if (selectedWorldId === undefined) {
+      alert("Спочатку виберіть світ!");
+      return;
+    }
     if (!formData.date.trim()) {
       alert("Будь ласка, введіть дату!");
       return;
@@ -124,12 +151,15 @@ const TimelineModule = () => {
   };
 
   const handleEditEvent = (event: Event) => {
-    setEditEventId(event.id);
-    setFormData(event);
-    setShowEventModal(true);
+    if (selectedWorldId !== undefined) {
+      setEditEventId(event.id);
+      setFormData(event);
+      setShowEventModal(true);
+    }
   };
 
   const handleDeleteEvent = (eventId: number) => {
+    if (selectedWorldId === undefined) return;
     if (window.confirm("Ви впевнені, що хочете видалити цю подію?")) {
       setTimelines(
         timelines.map((t) =>
@@ -142,6 +172,7 @@ const TimelineModule = () => {
   };
 
   const handleDeleteAllEvents = () => {
+    if (selectedWorldId === undefined) return;
     if (
       window.confirm(
         "Ви впевнені, що хочете видалити ВСІ події у цій хронології?"
@@ -156,6 +187,7 @@ const TimelineModule = () => {
   };
 
   const handleAddTimeline = () => {
+    if (selectedWorldId === undefined) return;
     if (newTimelineName.trim()) {
       const newTimeline = { id: Date.now(), events: [], name: newTimelineName };
       setTimelines([...timelines, newTimeline]);
@@ -165,6 +197,7 @@ const TimelineModule = () => {
   };
 
   const handleDeleteTimeline = (timelineId: number) => {
+    if (selectedWorldId === undefined) return;
     if (window.confirm("Ви впевнені, що хочете видалити цю хронологію?")) {
       const newTimelines = timelines.filter((t) => t.id !== timelineId);
       setTimelines(newTimelines);
@@ -295,8 +328,10 @@ const TimelineModule = () => {
           <Button
             variant="primary"
             onClick={() => {
-              setEditEventId(null);
-              setShowEventModal(true);
+              if (selectedWorldId !== undefined) {
+                setEditEventId(null);
+                setShowEventModal(true);
+              }
             }}
             className="ms-2"
             style={{ backgroundColor: "#6b4e9a", border: "none" }}

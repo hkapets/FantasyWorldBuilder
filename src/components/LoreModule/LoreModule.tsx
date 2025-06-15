@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Button } from "react-bootstrap";
 
 interface LoreEntry {
   id: string;
@@ -23,11 +24,18 @@ interface MagicType {
   skills: Skill[];
 }
 
-const LoreModule: React.FC = () => {
+interface LoreModuleProps {
+  selectedWorldId?: number; // Додано проп для вибраного світу
+}
+
+const LoreModule: React.FC<LoreModuleProps> = ({ selectedWorldId }) => {
   const [loreEntries, setLoreEntries] = useState<LoreEntry[]>(() => {
     try {
-      const saved = localStorage.getItem("loreEntries");
-      return saved ? JSON.parse(saved) : [];
+      if (selectedWorldId !== undefined) {
+        const saved = localStorage.getItem(`loreEntries_${selectedWorldId}`);
+        return saved ? JSON.parse(saved) : [];
+      }
+      return [];
     } catch (error) {
       console.warn("Failed to load lore entries from localStorage:", error);
       return [];
@@ -39,113 +47,115 @@ const LoreModule: React.FC = () => {
   );
   const [magicTypes, setMagicTypes] = useState<MagicType[]>(() => {
     try {
-      const saved = localStorage.getItem("magicTypes");
-      const initialTypes = [
-        {
-          id: "1",
-          name: "Вогонь",
-          icon: "/icons/fire.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "2",
-          name: "Вода",
-          icon: "/icons/water.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "3",
-          name: "Повітря",
-          icon: "/icons/air.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "4",
-          name: "Земля",
-          icon: "/icons/earth.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "5",
-          name: "Рослин",
-          icon: "/icons/plants.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "6",
-          name: "Світла",
-          icon: "/icons/light.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "7",
-          name: "Темряви",
-          icon: "/icons/darkness.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "8",
-          name: "Швидкості",
-          icon: "/icons/speed.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "9",
-          name: "Електромагія",
-          icon: "/icons/electromagic.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "10",
-          name: "Магія впливу",
-          icon: "/icons/influence.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "11",
-          name: "Магія посилення",
-          icon: "/icons/enhancement.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "12",
-          name: "Тіні",
-          icon: "/icons/shadow.png",
-          customIcon: null,
-          skills: [],
-        },
-        {
-          id: "13",
-          name: "Створення",
-          icon: "/icons/creation.png",
-          customIcon: null,
-          skills: [],
-        },
-      ];
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Перевіряємо, чи є всі 13 типів, якщо ні — повертаємо initialTypes
-        if (parsed.length !== 13) {
-          console.warn(
-            "Incomplete magicTypes in localStorage, resetting to initialTypes"
-          );
-          localStorage.removeItem("magicTypes"); // Очищаємо пошкоджені дані
-          return initialTypes;
+      if (selectedWorldId !== undefined) {
+        const saved = localStorage.getItem(`magicTypes_${selectedWorldId}`);
+        const initialTypes = [
+          {
+            id: "1",
+            name: "Вогонь",
+            icon: "/icons/fire.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "2",
+            name: "Вода",
+            icon: "/icons/water.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "3",
+            name: "Повітря",
+            icon: "/icons/air.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "4",
+            name: "Земля",
+            icon: "/icons/earth.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "5",
+            name: "Рослин",
+            icon: "/icons/plants.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "6",
+            name: "Світла",
+            icon: "/icons/light.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "7",
+            name: "Темряви",
+            icon: "/icons/darkness.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "8",
+            name: "Швидкості",
+            icon: "/icons/speed.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "9",
+            name: "Електромагія",
+            icon: "/icons/electromagic.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "10",
+            name: "Магія впливу",
+            icon: "/icons/influence.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "11",
+            name: "Магія посилення",
+            icon: "/icons/enhancement.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "12",
+            name: "Тіні",
+            icon: "/icons/shadow.png",
+            customIcon: null,
+            skills: [],
+          },
+          {
+            id: "13",
+            name: "Створення",
+            icon: "/icons/creation.png",
+            customIcon: null,
+            skills: [],
+          },
+        ];
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.length !== 13) {
+            console.warn(
+              "Incomplete magicTypes in localStorage, resetting to initialTypes"
+            );
+            localStorage.removeItem(`magicTypes_${selectedWorldId}`);
+            return initialTypes;
+          }
+          return parsed;
         }
-        return parsed;
+        return initialTypes;
       }
-      return initialTypes;
+      return [];
     } catch (error) {
       console.warn("Failed to load magic types from localStorage:", error);
       return [
@@ -254,33 +264,37 @@ const LoreModule: React.FC = () => {
   const [isUltimate, setIsUltimate] = useState(false);
 
   useEffect(() => {
-    console.log("Current magicTypes:", magicTypes); // Дебаг для перевірки поточного стану
-    try {
-      localStorage.setItem("loreEntries", JSON.stringify(loreEntries));
-      localStorage.setItem(
-        "magicTypes",
-        JSON.stringify(
-          magicTypes.map((m) => ({
-            id: m.id,
-            name: m.name,
-            icon: m.icon,
-            skills: m.skills.map((s) => ({
-              id: s.id,
-              name: s.name,
-              icon: s.icon,
-              parentId: s.parentId,
-              isUltimate: s.isUltimate,
-            })),
-          }))
-        )
-      );
-    } catch (error) {
-      console.warn("Failed to save to localStorage:", error);
+    if (selectedWorldId !== undefined) {
+      try {
+        localStorage.setItem(
+          `loreEntries_${selectedWorldId}`,
+          JSON.stringify(loreEntries)
+        );
+        localStorage.setItem(
+          `magicTypes_${selectedWorldId}`,
+          JSON.stringify(
+            magicTypes.map((m) => ({
+              id: m.id,
+              name: m.name,
+              icon: m.icon,
+              skills: m.skills.map((s) => ({
+                id: s.id,
+                name: s.name,
+                icon: s.icon,
+                parentId: s.parentId,
+                isUltimate: s.isUltimate,
+              })),
+            }))
+          )
+        );
+      } catch (error) {
+        console.warn("Failed to save to localStorage:", error);
+      }
     }
-  }, [loreEntries, magicTypes]);
+  }, [loreEntries, magicTypes, selectedWorldId]);
 
   const addLore = () => {
-    if (newLore.trim()) {
+    if (newLore.trim() && selectedWorldId !== undefined) {
       const newEntry: LoreEntry = {
         id: Date.now().toString(),
         section: selectedSection,
@@ -292,54 +306,62 @@ const LoreModule: React.FC = () => {
   };
 
   const clearLore = () => {
-    setLoreEntries([]);
-    try {
-      localStorage.removeItem("loreEntries");
-    } catch (error) {
-      console.warn("Failed to clear lore entries from localStorage:", error);
+    if (selectedWorldId !== undefined) {
+      setLoreEntries([]);
+      try {
+        localStorage.removeItem(`loreEntries_${selectedWorldId}`);
+      } catch (error) {
+        console.warn("Failed to clear lore entries from localStorage:", error);
+      }
     }
   };
 
   const addMagicType = () => {
-    if (
-      (selectedMagicType === "custom" && newMagicName.trim()) ||
-      selectedMagicType
-    ) {
-      const magicToAdd = magicTypes.find((m) => m.id === selectedMagicType);
-      if (magicToAdd) {
-        setMagicTypes(
-          magicTypes.map((m) =>
-            m.id === selectedMagicType
-              ? {
-                  ...m,
-                  customIcon: newMagicIcon,
-                  icon: newMagicIcon
-                    ? URL.createObjectURL(newMagicIcon)
-                    : m.icon,
-                }
-              : m
-          )
-        );
-      } else if (newMagicName.trim()) {
-        const newMagic: MagicType = {
-          id: Date.now().toString(),
-          name: newMagicName,
-          icon: newMagicIcon
-            ? URL.createObjectURL(newMagicIcon)
-            : "/icons/undefined.png",
-          customIcon: newMagicIcon,
-          skills: [],
-        };
-        setMagicTypes((prev) => [...prev, newMagic]);
+    if (selectedWorldId !== undefined) {
+      if (
+        (selectedMagicType === "custom" && newMagicName.trim()) ||
+        selectedMagicType
+      ) {
+        const magicToAdd = magicTypes.find((m) => m.id === selectedMagicType);
+        if (magicToAdd) {
+          setMagicTypes(
+            magicTypes.map((m) =>
+              m.id === selectedMagicType
+                ? {
+                    ...m,
+                    customIcon: newMagicIcon,
+                    icon: newMagicIcon
+                      ? URL.createObjectURL(newMagicIcon)
+                      : m.icon,
+                  }
+                : m
+            )
+          );
+        } else if (newMagicName.trim()) {
+          const newMagic: MagicType = {
+            id: Date.now().toString(),
+            name: newMagicName,
+            icon: newMagicIcon
+              ? URL.createObjectURL(newMagicIcon)
+              : "/icons/undefined.png",
+            customIcon: newMagicIcon,
+            skills: [],
+          };
+          setMagicTypes((prev) => [...prev, newMagic]);
+        }
+        setNewMagicName("");
+        setNewMagicIcon(null);
+        setSelectedMagicType(null);
       }
-      setNewMagicName("");
-      setNewMagicIcon(null);
-      setSelectedMagicType(null);
     }
   };
 
   const addSkill = () => {
-    if (newSkillName.trim() && selectedMagicType) {
+    if (
+      newSkillName.trim() &&
+      selectedMagicType &&
+      selectedWorldId !== undefined
+    ) {
       const newSkill: Skill = {
         id: Date.now().toString(),
         name: newSkillName,
@@ -365,13 +387,17 @@ const LoreModule: React.FC = () => {
   };
 
   const deleteMagicType = (id: string) => {
-    setMagicTypes(magicTypes.filter((m) => m.id !== id));
+    if (selectedWorldId !== undefined) {
+      setMagicTypes(magicTypes.filter((m) => m.id !== id));
+    }
   };
 
   const deleteSkillTree = (magicId: string) => {
-    setMagicTypes(
-      magicTypes.map((m) => (m.id === magicId ? { ...m, skills: [] } : m))
-    );
+    if (selectedWorldId !== undefined) {
+      setMagicTypes(
+        magicTypes.map((m) => (m.id === magicId ? { ...m, skills: [] } : m))
+      );
+    }
   };
 
   const sections = {
@@ -383,8 +409,17 @@ const LoreModule: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="h4">Lore Module</h2>
+    <div
+      className="p-4"
+      style={{
+        backgroundColor: "#2c1e3a",
+        color: "white",
+        borderRadius: "10px",
+      }}
+    >
+      <h2 className="mb-3" style={{ borderBottom: "2px solid #6b4e9a" }}>
+        Лор
+      </h2>
       {/* Лор-розділи */}
       <div className="input-group mb-3">
         <select
@@ -393,6 +428,11 @@ const LoreModule: React.FC = () => {
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
             setSelectedSection(e.target.value)
           }
+          style={{
+            backgroundColor: "#4a2c5a",
+            color: "white",
+            border: "1px solid #6b4e9a",
+          }}
         >
           {Object.entries(sections).map(([key, value]) => (
             <optgroup key={key} label={value}>
@@ -417,14 +457,23 @@ const LoreModule: React.FC = () => {
         <input
           type="text"
           className="form-control"
-          placeholder="Enter lore here..."
+          placeholder="Введіть лор тут..."
           value={newLore}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setNewLore(e.target.value)
           }
+          style={{
+            backgroundColor: "#4a2c5a",
+            color: "white",
+            border: "1px solid #6b4e9a",
+          }}
         />
-        <button onClick={addLore} className="btn btn-secondary">
-          Add Lore Entry
+        <button
+          onClick={addLore}
+          className="btn btn-secondary"
+          style={{ backgroundColor: "#6b4e9a", border: "none" }}
+        >
+          Додати запис лору
         </button>
       </div>
       <div className="mt-3">
@@ -443,7 +492,11 @@ const LoreModule: React.FC = () => {
                           entry.section === `${key}-geography-continents`
                       )
                       .map((entry) => (
-                        <li key={entry.id} className="list-group-item">
+                        <li
+                          key={entry.id}
+                          className="list-group-item bg-dark text-white"
+                          style={{ border: "1px solid #6b4e9a" }}
+                        >
                           {entry.text}
                         </li>
                       ))}
@@ -457,7 +510,11 @@ const LoreModule: React.FC = () => {
                         (entry) => entry.section === `${key}-geography-oceans`
                       )
                       .map((entry) => (
-                        <li key={entry.id} className="list-group-item">
+                        <li
+                          key={entry.id}
+                          className="list-group-item bg-dark text-white"
+                          style={{ border: "1px solid #6b4e9a" }}
+                        >
                           {entry.text}
                         </li>
                       ))}
@@ -468,7 +525,11 @@ const LoreModule: React.FC = () => {
                   {loreEntries
                     .filter((entry) => entry.section === `${key}-climate`)
                     .map((entry) => (
-                      <li key={entry.id} className="list-group-item">
+                      <li
+                        key={entry.id}
+                        className="list-group-item bg-dark text-white"
+                        style={{ border: "1px solid #6b4e9a" }}
+                      >
                         {entry.text}
                       </li>
                     ))}
@@ -478,7 +539,11 @@ const LoreModule: React.FC = () => {
                   {loreEntries
                     .filter((entry) => entry.section === `${key}-locations`)
                     .map((entry) => (
-                      <li key={entry.id} className="list-group-item">
+                      <li
+                        key={entry.id}
+                        className="list-group-item bg-dark text-white"
+                        style={{ border: "1px solid #6b4e9a" }}
+                      >
                         {entry.text}
                       </li>
                     ))}
@@ -495,7 +560,11 @@ const LoreModule: React.FC = () => {
                     onChange={(e) => {
                       const value = e.target.value;
                       setSelectedMagicType(value === "custom" ? value : value);
-                      console.log("Selected magic type:", value); // Дебаг
+                    }}
+                    style={{
+                      backgroundColor: "#4a2c5a",
+                      color: "white",
+                      border: "1px solid #6b4e9a",
                     }}
                   >
                     <option value="" disabled>
@@ -521,6 +590,11 @@ const LoreModule: React.FC = () => {
                       placeholder="Назва нової магії..."
                       value={newMagicName}
                       onChange={(e) => setNewMagicName(e.target.value)}
+                      style={{
+                        backgroundColor: "#4a2c5a",
+                        color: "white",
+                        border: "1px solid #6b4e9a",
+                      }}
                     />
                   )}
                   <input
@@ -530,14 +604,24 @@ const LoreModule: React.FC = () => {
                     onChange={(e) =>
                       setNewMagicIcon(e.target.files?.[0] || null)
                     }
+                    style={{
+                      backgroundColor: "#4a2c5a",
+                      color: "white",
+                      border: "1px solid #6b4e9a",
+                    }}
                   />
-                  <button onClick={addMagicType} className="btn btn-secondary">
+                  <button
+                    onClick={addMagicType}
+                    className="btn btn-secondary"
+                    style={{ backgroundColor: "#6b4e9a", border: "none" }}
+                  >
                     Додати/Оновити магію
                   </button>
                   {selectedMagicType && (
                     <button
                       onClick={() => deleteMagicType(selectedMagicType)}
                       className="btn btn-danger ms-2"
+                      style={{ backgroundColor: "#dc3545", border: "none" }}
                     >
                       Видалити магію
                     </button>
@@ -561,6 +645,11 @@ const LoreModule: React.FC = () => {
                         placeholder="Назва навичку..."
                         value={newSkillName}
                         onChange={(e) => setNewSkillName(e.target.value)}
+                        style={{
+                          backgroundColor: "#4a2c5a",
+                          color: "white",
+                          border: "1px solid #6b4e9a",
+                        }}
                       />
                       <input
                         type="file"
@@ -569,11 +658,21 @@ const LoreModule: React.FC = () => {
                         onChange={(e) =>
                           setNewSkillIcon(e.target.files?.[0] || null)
                         }
+                        style={{
+                          backgroundColor: "#4a2c5a",
+                          color: "white",
+                          border: "1px solid #6b4e9a",
+                        }}
                       />
                       <select
                         className="form-select"
                         value={parentSkillId || ""}
                         onChange={(e) => setParentSkillId(e.target.value)}
+                        style={{
+                          backgroundColor: "#4a2c5a",
+                          color: "white",
+                          border: "1px solid #6b4e9a",
+                        }}
                       >
                         <option value="">Без батьківського навичку</option>
                         {magic.skills.map((skill) => (
@@ -589,11 +688,18 @@ const LoreModule: React.FC = () => {
                           checked={isUltimate}
                           onChange={(e) => setIsUltimate(e.target.checked)}
                         />
-                        <label className="form-check-label">
+                        <label
+                          className="form-check-label"
+                          style={{ color: "white" }}
+                        >
                           Ультимативний навик
                         </label>
                       </div>
-                      <button onClick={addSkill} className="btn btn-secondary">
+                      <button
+                        onClick={addSkill}
+                        className="btn btn-secondary"
+                        style={{ backgroundColor: "#6b4e9a", border: "none" }}
+                      >
                         Додати навик
                       </button>
                     </div>
@@ -603,6 +709,7 @@ const LoreModule: React.FC = () => {
                     <button
                       onClick={() => deleteSkillTree(magic.id)}
                       className="btn btn-danger mt-2"
+                      style={{ backgroundColor: "#dc3545", border: "none" }}
                     >
                       Очистити дерево навичок
                     </button>
@@ -615,7 +722,11 @@ const LoreModule: React.FC = () => {
                 {loreEntries
                   .filter((entry) => entry.section === key)
                   .map((entry) => (
-                    <li key={entry.id} className="list-group-item">
+                    <li
+                      key={entry.id}
+                      className="list-group-item bg-dark text-white"
+                      style={{ border: "1px solid #6b4e9a" }}
+                    >
                       {entry.text}
                     </li>
                   ))}
@@ -624,8 +735,12 @@ const LoreModule: React.FC = () => {
           </div>
         ))}
       </div>
-      <button onClick={clearLore} className="btn btn-danger mt-2 ms-2">
-        Clear Lore
+      <button
+        onClick={clearLore}
+        className="btn btn-danger mt-2 ms-2"
+        style={{ backgroundColor: "#dc3545", border: "none" }}
+      >
+        Очистити лор
       </button>
     </div>
   );
@@ -636,7 +751,8 @@ const renderSkillTree = (skills: Skill[], magicId: string) => {
   return skills.map((skill) => (
     <li
       key={skill.id}
-      className="list-group-item d-flex justify-content-between align-items-center"
+      className="list-group-item d-flex justify-content-between align-items-center bg-dark text-white"
+      style={{ border: "1px solid #6b4e9a" }}
     >
       <div>
         <img

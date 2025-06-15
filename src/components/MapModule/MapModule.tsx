@@ -28,10 +28,17 @@ interface Drawing {
   lineStyle: string;
 }
 
-const MapModule = () => {
+interface MapModuleProps {
+  selectedWorldId?: number; // Додано проп для вибраного світу
+}
+
+const MapModule = ({ selectedWorldId }: MapModuleProps) => {
   const [maps, setMaps] = useState<Map[]>(() => {
-    const savedMaps = localStorage.getItem("maps");
-    return savedMaps ? JSON.parse(savedMaps) : [];
+    if (selectedWorldId !== undefined) {
+      const savedMaps = localStorage.getItem(`maps_${selectedWorldId}`);
+      return savedMaps ? JSON.parse(savedMaps) : [];
+    }
+    return [];
   });
   const [selectedMapId, setSelectedMapId] = useState<number | null>(
     maps.length > 0 ? maps[0].id : null
@@ -40,12 +47,18 @@ const MapModule = () => {
   const [newMapName, setNewMapName] = useState("");
   const [mapFile, setMapFile] = useState<File | null>(null);
   const [markers, setMarkers] = useState<Marker[]>(() => {
-    const savedMarkers = localStorage.getItem("markers");
-    return savedMarkers ? JSON.parse(savedMarkers) : [];
+    if (selectedWorldId !== undefined) {
+      const savedMarkers = localStorage.getItem(`markers_${selectedWorldId}`);
+      return savedMarkers ? JSON.parse(savedMarkers) : [];
+    }
+    return [];
   });
   const [drawings, setDrawings] = useState<Drawing[]>(() => {
-    const savedDrawings = localStorage.getItem("drawings");
-    return savedDrawings ? JSON.parse(savedDrawings) : [];
+    if (selectedWorldId !== undefined) {
+      const savedDrawings = localStorage.getItem(`drawings_${selectedWorldId}`);
+      return savedDrawings ? JSON.parse(savedDrawings) : [];
+    }
+    return [];
   });
   const [selectedMarkerType, setSelectedMarkerType] = useState<string>("City");
   const [scale, setScale] = useState(1);
@@ -63,10 +76,29 @@ const MapModule = () => {
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    localStorage.setItem("maps", JSON.stringify(maps));
-    localStorage.setItem("markers", JSON.stringify(markers));
-    localStorage.setItem("drawings", JSON.stringify(drawings));
-  }, [maps, markers, drawings]);
+    if (selectedWorldId !== undefined) {
+      localStorage.setItem(`maps_${selectedWorldId}`, JSON.stringify(maps));
+      localStorage.setItem(
+        `markers_${selectedWorldId}`,
+        JSON.stringify(markers)
+      );
+      localStorage.setItem(
+        `drawings_${selectedWorldId}`,
+        JSON.stringify(drawings)
+      );
+    }
+  }, [maps, markers, drawings, selectedWorldId]);
+
+  useEffect(() => {
+    if (selectedWorldId !== undefined) {
+      const savedMaps = localStorage.getItem(`maps_${selectedWorldId}`);
+      const savedMarkers = localStorage.getItem(`markers_${selectedWorldId}`);
+      const savedDrawings = localStorage.getItem(`drawings_${selectedWorldId}`);
+      if (savedMaps) setMaps(JSON.parse(savedMaps));
+      if (savedMarkers) setMarkers(JSON.parse(savedMarkers));
+      if (savedDrawings) setDrawings(JSON.parse(savedDrawings));
+    }
+  }, [selectedWorldId]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -75,6 +107,10 @@ const MapModule = () => {
   };
 
   const handleUpload = () => {
+    if (selectedWorldId === undefined) {
+      alert("Спочатку виберіть світ!");
+      return;
+    }
     if (mapFile && newMapName.trim()) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -100,6 +136,7 @@ const MapModule = () => {
   };
 
   const handleDeleteMap = (id: number) => {
+    if (selectedWorldId === undefined) return;
     if (window.confirm("Ви впевнені, що хочете видалити цю карту?")) {
       setMaps(maps.filter((map) => map.id !== id));
       setMarkers(markers.filter((marker) => marker.mapId !== id));
@@ -121,7 +158,7 @@ const MapModule = () => {
   };
 
   const handleAddMarker = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isDrawing) return;
+    if (isDrawing || selectedWorldId === undefined) return;
 
     if (selectedMapId && imgRef.current) {
       const { x, y } = getRelativeCoordinates(e);
@@ -143,12 +180,14 @@ const MapModule = () => {
   };
 
   const handleDeleteMarker = (id: number) => {
+    if (selectedWorldId === undefined) return;
     if (window.confirm("Ви впевнені, що хочете видалити цей маркер?")) {
       setMarkers(markers.filter((marker) => marker.id !== id));
     }
   };
 
   const handleDeleteAllMarkers = () => {
+    if (selectedWorldId === undefined) return;
     if (
       selectedMapId &&
       window.confirm(
@@ -160,6 +199,7 @@ const MapModule = () => {
   };
 
   const handleClearMap = () => {
+    if (selectedWorldId === undefined) return;
     if (
       selectedMapId &&
       window.confirm("Ви впевнені, що хочете очистити цю карту від усіх змін?")
@@ -172,6 +212,7 @@ const MapModule = () => {
   };
 
   const handleClearDrawings = () => {
+    if (selectedWorldId === undefined) return;
     if (
       selectedMapId &&
       window.confirm("Ви впевнені, що хочете очистити малювання на цій карті?")
@@ -183,6 +224,7 @@ const MapModule = () => {
   };
 
   const handleUndoDrawing = () => {
+    if (selectedWorldId === undefined) return;
     if (selectedMapId && drawings.length > 0) {
       const currentDrawings = drawings.filter((d) => d.mapId === selectedMapId);
       if (currentDrawings.length > 0) {
@@ -194,7 +236,13 @@ const MapModule = () => {
   };
 
   const handleStartDrawing = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDrawing || !selectedMapId || !imgRef.current) return;
+    if (
+      !isDrawing ||
+      selectedWorldId === undefined ||
+      !selectedMapId ||
+      !imgRef.current
+    )
+      return;
 
     e.preventDefault();
     setIsMouseDown(true);
@@ -216,7 +264,13 @@ const MapModule = () => {
   };
 
   const handleDrawing = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDrawing || !isMouseDown || !currentDrawing || !imgRef.current)
+    if (
+      !isDrawing ||
+      !isMouseDown ||
+      !currentDrawing ||
+      !imgRef.current ||
+      selectedWorldId === undefined
+    )
       return;
 
     const { x, y } = getRelativeCoordinates(e);
@@ -236,7 +290,7 @@ const MapModule = () => {
   };
 
   const handleEndDrawing = () => {
-    if (currentDrawing && isMouseDown) {
+    if (currentDrawing && isMouseDown && selectedWorldId !== undefined) {
       setDrawings((prev) => [...prev, currentDrawing]);
       setCurrentDrawing(null);
     }

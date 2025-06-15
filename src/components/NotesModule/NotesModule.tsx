@@ -47,6 +47,7 @@ interface NotesModuleProps {
   onNoteDeleted?: (noteId: number) => void;
   onNoteUpdated?: (note: Note) => void;
   noteCategoryColors: { [key: string]: string };
+  selectedWorldId?: number; // Додано проп для вибраного світу
 }
 
 const NotesModule = ({
@@ -57,10 +58,14 @@ const NotesModule = ({
   onNoteDeleted,
   onNoteUpdated,
   noteCategoryColors,
+  selectedWorldId,
 }: NotesModuleProps) => {
   const [notes, setNotes] = useState<Note[]>(() => {
-    const savedNotes = localStorage.getItem("notes");
-    return savedNotes ? JSON.parse(savedNotes) : [];
+    if (selectedWorldId !== undefined) {
+      const savedNotes = localStorage.getItem(`notes_${selectedWorldId}`);
+      return savedNotes ? JSON.parse(savedNotes) : [];
+    }
+    return [];
   });
   const [showModal, setShowModal] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -78,26 +83,35 @@ const NotesModule = ({
 
   // Синхронізація з зовнішніми нотатками
   useEffect(() => {
-    if (externalNotes.length > 0) {
+    if (selectedWorldId !== undefined && externalNotes.length > 0) {
       setNotes((prevNotes) => {
         const existingIds = new Set(prevNotes.map((note) => note.id));
         const newNotes = externalNotes.filter(
           (note) => !existingIds.has(note.id)
         );
         const updatedNotes = [...prevNotes, ...newNotes];
-        localStorage.setItem("notes", JSON.stringify(updatedNotes));
+        localStorage.setItem(
+          `notes_${selectedWorldId}`,
+          JSON.stringify(updatedNotes)
+        );
         return updatedNotes;
       });
     }
-  }, [externalNotes]);
+  }, [externalNotes, selectedWorldId]);
 
   useEffect(() => {
-    console.log("Events received in NotesModule:", events);
-    localStorage.setItem("notes", JSON.stringify(notes));
-    console.log("Notes rendered:", notes);
-  }, [notes, events]);
+    if (selectedWorldId !== undefined) {
+      console.log("Events received in NotesModule:", events);
+      localStorage.setItem(`notes_${selectedWorldId}`, JSON.stringify(notes));
+      console.log("Notes rendered:", notes);
+    }
+  }, [notes, events, selectedWorldId]);
 
   const handleSave = () => {
+    if (selectedWorldId === undefined) {
+      alert("Спочатку виберіть світ!");
+      return;
+    }
     if (!formData.category.trim()) {
       setError("Категорія є обов'язковою!");
       return;
@@ -118,7 +132,10 @@ const NotesModule = ({
           )
         : [...prevNotes, newNote];
       console.log("Current notes after update:", updatedNotes);
-      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      localStorage.setItem(
+        `notes_${selectedWorldId}`,
+        JSON.stringify(updatedNotes)
+      );
       return updatedNotes;
     });
 
@@ -140,33 +157,44 @@ const NotesModule = ({
   };
 
   const handleEdit = (note: Note) => {
-    setSelectedNote(note);
-    setFormData(note);
-    setShowModal(true);
+    if (selectedWorldId !== undefined) {
+      setSelectedNote(note);
+      setFormData(note);
+      setShowModal(true);
+    }
   };
 
   const handleDelete = (id: number) => {
+    if (selectedWorldId === undefined) return;
     if (window.confirm("Ви впевнені, що хочете видалити цю нотатку?")) {
       const updatedNotes = notes.filter((note) => note.id !== id);
       setNotes(updatedNotes);
-      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      localStorage.setItem(
+        `notes_${selectedWorldId}`,
+        JSON.stringify(updatedNotes)
+      );
       if (onNoteDeleted) onNoteDeleted(id);
     }
   };
 
   const handleDeleteAllNotes = () => {
+    if (selectedWorldId === undefined) return;
     if (window.confirm("Ви впевнені, що хочете видалити ВСІ нотатки?")) {
       setNotes([]);
-      localStorage.setItem("notes", JSON.stringify([]));
+      localStorage.setItem(`notes_${selectedWorldId}`, JSON.stringify([]));
     }
   };
 
   const togglePin = (id: number) => {
+    if (selectedWorldId === undefined) return;
     const updatedNotes = notes.map((note) =>
       note.id === id ? { ...note, isPinned: !note.isPinned } : note
     );
     setNotes(updatedNotes);
-    localStorage.setItem("notes", JSON.stringify(updatedNotes));
+    localStorage.setItem(
+      `notes_${selectedWorldId}`,
+      JSON.stringify(updatedNotes)
+    );
 
     const updatedNote = updatedNotes.find((note) => note.id === id);
     if (updatedNote && onNoteUpdated) onNoteUpdated(updatedNote);
@@ -218,18 +246,20 @@ const NotesModule = ({
           <Button
             variant="primary"
             onClick={() => {
-              setSelectedNote(null);
-              setFormData({
-                id: null,
-                title: "",
-                text: "",
-                category: "",
-                tags: "",
-                dateCreated: new Date().toISOString().split("T")[0],
-                relatedEvent: "",
-                isPinned: false,
-              });
-              setShowModal(true);
+              if (selectedWorldId !== undefined) {
+                setSelectedNote(null);
+                setFormData({
+                  id: null,
+                  title: "",
+                  text: "",
+                  category: "",
+                  tags: "",
+                  dateCreated: new Date().toISOString().split("T")[0],
+                  relatedEvent: "",
+                  isPinned: false,
+                });
+                setShowModal(true);
+              }
             }}
             style={{ backgroundColor: "#6b4e9a", border: "none" }}
           >
