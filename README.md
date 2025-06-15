@@ -1,78 +1,86 @@
-FantasyWorldBuilder
+# FantasyWorldBuilder
 
-A web-based tool for creating and managing fantasy worlds, including lore, characters, timelines, maps, notes, and connections. Built with React, TypeScript, Tailwind CSS, and Zustand.
+FantasyWorldBuilder — це веб-додаток для створення та управління вигаданими світами, хронологіями та нотатками. Розроблено з використанням React, TypeScript і Bootstrap.
 
-Features
+## Опис
 
-Lore Module: Manage lore entries and magic trees.
+Додаток дозволяє користувачам:
 
-Characters Module: Create and edit characters with relationships.
+- Створювати та редагувати хронологію подій.
+- Управляти нотатками з категоріями та зв’язками з подіями.
+- Перемикатися між модулями (Лор, Персонажі, Хронологія тощо).
+- Використовувати звукові ефекти та фонову музику.
 
-Timeline Module: Build event chronologies.
+## Встановлення
 
-Map Module: Design locations and boundaries.
+1. Клонуйте репозиторій:
+   git clone <https://github.com/hkapets/FantasyWorldBuilder.git>
 
-Notes Module: Organize notes with folders and tags.
+text
 
-Connections Module: Visualize entity relationships using vis-network.
+Свернуть
 
-Global Search: Search across all modules with fuse.js.
+Развернуть
 
-Onboarding: Interactive tutorial for new users.
-
-Templates Module: Predefined templates for entities.
-
-Dashboard Module: Analytics and statistics.
-
-Export/Import Module: Export and import data in JSON.
-
-Localization: Supports Ukrainian, Polish, and English.
-
-Sound Effects: Toggleable fantasy-themed sounds.
-
-Installation
-
-Clone the repository:
-
-git clone https://github.com/hkapets/FantasyWorldBuilder.git
+Копировать 2. Перейдіть до директорії:
 cd FantasyWorldBuilder
 
-Install dependencies:
+text
 
+Свернуть
+
+Развернуть
+
+Копировать 3. Встановіть залежності:
 npm install
 
-Add sound files to public/audio/:
+text
 
-parchment-rustle.mp3
+Свернуть
 
-quill-button.mp3
+Развернуть
 
-button-click.mp3
+Копировать 4. Запустіть додаток:
+npm start
 
-magic-chime.wav
+text
 
-Run the development server:
+Свернуть
 
-npm run dev
+Развернуть
 
-Testing
+Копировать
 
-Run unit tests:
+## Функціонал
 
-npm test
+- **Хронологія**: Додавання, редагування, видалення подій; видалення всіх подій.
+- **Нотатки**: Додавання, редагування, видалення нотаток; видалення всіх нотаток; зв’язок із подіями.
+- **Звуки**: Ввімкнення/вимкнення звукових ефектів.
+- **Синхронізація**: Події синхронізуються між модулями через `localStorage`.
 
-Run Cypress E2E tests:
+## Плани розвитку
 
-npx cypress open
+- Додати фільтри та глобальний пошук.
+- Реалізувати інтерактивні карти.
+- Розширити експорт/імпорт (JSON, PDF).
+- Додати підтримку кількох користувачів (опціонально).
 
-Deployment
+## Технології
 
-Build the project:
+- React
+- TypeScript
+- React Bootstrap
+- localStorage
 
-npm run build
+## Ліцензія
 
-Deploy the dist/ folder to your hosting service.
+[Додайте ліцензію, якщо є, наприклад, MIT]
 
-License
+## Автор
 
-MIT License
+- [hkapets](https://github.com/hkapets)
+
+## Примітки
+
+- Модулі "Тести" та "Шаблони" наразі не використовуються і можуть бути видалені.
+- Код зберігається локально; для хмарного сховища потрібна додаткова інтеграція.
