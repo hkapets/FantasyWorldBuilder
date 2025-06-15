@@ -16,7 +16,7 @@ interface Marker {
   y: number;
   type: string;
   customName?: string;
-  labelText?: string; // Додано поле для тексту мітки
+  labelText?: string;
 }
 
 interface Drawing {
@@ -344,22 +344,6 @@ const MapModule = () => {
             />
           )}
           <Button
-            variant="secondary"
-            onClick={() => handleZoom(true)}
-            className="ms-2"
-            style={{ backgroundColor: "#6b4e9a", border: "none" }}
-          >
-            +
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => handleZoom(false)}
-            className="ms-2"
-            style={{ backgroundColor: "#6b4e9a", border: "none" }}
-          >
-            -
-          </Button>
-          <Button
             variant="danger"
             onClick={handleDeleteAllMarkers}
             className="ms-2"
@@ -470,6 +454,32 @@ const MapModule = () => {
       </div>
       <div
         style={{
+          marginBottom: "10px",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <Button
+          variant="secondary"
+          onClick={() => handleZoom(true)}
+          style={{
+            backgroundColor: "#6b4e9a",
+            border: "none",
+            marginRight: "5px",
+          }}
+        >
+          +
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => handleZoom(false)}
+          style={{ backgroundColor: "#6b4e9a", border: "none" }}
+        >
+          -
+        </Button>
+      </div>
+      <div
+        style={{
           maxWidth: "100%",
           overflowX: "auto",
           backgroundColor: "#2c1e3a",
@@ -480,150 +490,157 @@ const MapModule = () => {
       >
         {selectedMap ? (
           <div
-            ref={mapRef}
-            onClick={handleAddMarker}
-            onMouseDown={handleStartDrawing}
-            onMouseMove={handleDrawing}
-            onMouseUp={handleEndDrawing}
-            onMouseLeave={handleEndDrawing}
             style={{
               position: "relative",
               display: "inline-block",
-              transform: `scale(${scale})`,
-              transformOrigin: "0 0",
-              cursor: isDrawing ? "crosshair" : "pointer",
             }}
           >
-            <img
-              ref={imgRef}
-              src={selectedMap.url}
-              alt={selectedMap.name}
+            <div
+              ref={mapRef}
+              onClick={handleAddMarker}
+              onMouseDown={handleStartDrawing}
+              onMouseMove={handleDrawing}
+              onMouseUp={handleEndDrawing}
+              onMouseLeave={handleEndDrawing}
               style={{
-                display: "block",
-                maxWidth: "100%",
-                height: "auto",
-                maxHeight: "600px",
-                objectFit: "contain",
-              }}
-            />
-            {markers
-              .filter((marker) => marker.mapId === selectedMapId)
-              .map((marker) => (
-                <div
-                  key={marker.id}
-                  style={{
-                    position: "absolute",
-                    left: `${marker.x}%`,
-                    top: `${marker.y}%`,
-                    transform: "translate(-50%, -50%)",
-                    width: "32px",
-                    height: "32px",
-                    backgroundImage: `url(${getMarkerIcon(marker.type)})`,
-                    backgroundSize: "contain",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                    cursor: "pointer",
-                    zIndex: 10,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteMarker(marker.id);
-                  }}
-                  onMouseEnter={(e) => {
-                    const tooltip = e.currentTarget.querySelector(
-                      ".marker-tooltip"
-                    ) as HTMLElement | null;
-                    if (tooltip) tooltip.style.opacity = "1";
-                  }}
-                  onMouseLeave={(e) => {
-                    const tooltip = e.currentTarget.querySelector(
-                      ".marker-tooltip"
-                    ) as HTMLElement | null;
-                    if (tooltip) tooltip.style.opacity = "0";
-                  }}
-                  title={
-                    marker.labelText
-                      ? `${marker.customName || marker.type}: ${
-                          marker.labelText
-                        }`
-                      : marker.customName || marker.type
-                  }
-                >
-                  {marker.labelText && (
-                    <div
-                      className="marker-tooltip"
-                      style={{
-                        position: "absolute",
-                        bottom: "100%",
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        backgroundColor: "rgba(0, 0, 0, 0.8)",
-                        color: "white",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        whiteSpace: "nowrap",
-                        opacity: "0",
-                        pointerEvents: "none",
-                        transition: "opacity 0.3s",
-                        zIndex: 20,
-                      }}
-                    >
-                      {marker.labelText}
-                    </div>
-                  )}
-                </div>
-              ))}
-            <svg
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: `${selectedMap.width}px`,
-                height: `${selectedMap.height}px`,
-                pointerEvents: "none",
-                zIndex: 5,
+                position: "relative",
+                display: "inline-block",
+                transform: `scale(${scale})`,
+                transformOrigin: "0 0",
+                cursor: isDrawing ? "crosshair" : "pointer",
               }}
             >
-              {drawings
-                .filter((drawing) => drawing.mapId === selectedMapId)
-                .map((drawing) => (
+              <img
+                ref={imgRef}
+                src={selectedMap.url}
+                alt={selectedMap.name}
+                style={{
+                  display: "block",
+                  maxWidth: "100%",
+                  height: "auto",
+                  maxHeight: "600px",
+                  objectFit: "contain",
+                }}
+              />
+              {markers
+                .filter((marker) => marker.mapId === selectedMapId)
+                .map((marker) => (
+                  <div
+                    key={marker.id}
+                    style={{
+                      position: "absolute",
+                      left: `${marker.x}%`,
+                      top: `${marker.y}%`,
+                      transform: "translate(-50%, -50%)",
+                      width: "32px",
+                      height: "32px",
+                      backgroundImage: `url(${getMarkerIcon(marker.type)})`,
+                      backgroundSize: "contain",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                      cursor: "pointer",
+                      zIndex: 10,
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteMarker(marker.id);
+                    }}
+                    onMouseEnter={(e) => {
+                      const tooltip = e.currentTarget.querySelector(
+                        ".marker-tooltip"
+                      ) as HTMLElement | null;
+                      if (tooltip) tooltip.style.opacity = "1";
+                    }}
+                    onMouseLeave={(e) => {
+                      const tooltip = e.currentTarget.querySelector(
+                        ".marker-tooltip"
+                      ) as HTMLElement | null;
+                      if (tooltip) tooltip.style.opacity = "0";
+                    }}
+                    title={
+                      marker.labelText
+                        ? `${marker.customName || marker.type}: ${
+                            marker.labelText
+                          }`
+                        : marker.customName || marker.type
+                    }
+                  >
+                    {marker.labelText && (
+                      <div
+                        className="marker-tooltip"
+                        style={{
+                          position: "absolute",
+                          bottom: "100%",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          backgroundColor: "rgba(0, 0, 0, 0.8)",
+                          color: "white",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          whiteSpace: "nowrap",
+                          opacity: "0",
+                          pointerEvents: "none",
+                          transition: "opacity 0.3s",
+                          zIndex: 20,
+                        }}
+                      >
+                        {marker.labelText}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              <svg
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: `${selectedMap.width}px`,
+                  height: `${selectedMap.height}px`,
+                  pointerEvents: "none",
+                  zIndex: 5,
+                }}
+              >
+                {drawings
+                  .filter((drawing) => drawing.mapId === selectedMapId)
+                  .map((drawing) => (
+                    <polyline
+                      key={drawing.id}
+                      points={drawing.points
+                        .map((p) => `${p.x},${p.y}`)
+                        .join(" ")}
+                      stroke={drawing.color}
+                      strokeWidth={drawing.lineWidth}
+                      strokeDasharray={
+                        drawing.lineStyle === "dashed"
+                          ? "5 5"
+                          : drawing.lineStyle === "dotted"
+                          ? "2 2"
+                          : "0"
+                      }
+                      fill="none"
+                    />
+                  ))}
+                {currentDrawing && currentDrawing.points.length >= 2 && (
                   <polyline
-                    key={drawing.id}
-                    points={drawing.points
+                    points={currentDrawing.points
                       .map((p) => `${p.x},${p.y}`)
                       .join(" ")}
-                    stroke={drawing.color}
-                    strokeWidth={drawing.lineWidth}
+                    stroke={currentDrawing.color}
+                    strokeWidth={currentDrawing.lineWidth}
                     strokeDasharray={
-                      drawing.lineStyle === "dashed"
+                      currentDrawing.lineStyle === "dashed"
                         ? "5 5"
-                        : drawing.lineStyle === "dotted"
+                        : currentDrawing.lineStyle === "dotted"
                         ? "2 2"
                         : "0"
                     }
                     fill="none"
+                    opacity="0.7"
                   />
-                ))}
-              {currentDrawing && currentDrawing.points.length >= 2 && (
-                <polyline
-                  points={currentDrawing.points
-                    .map((p) => `${p.x},${p.y}`)
-                    .join(" ")}
-                  stroke={currentDrawing.color}
-                  strokeWidth={currentDrawing.lineWidth}
-                  strokeDasharray={
-                    currentDrawing.lineStyle === "dashed"
-                      ? "5 5"
-                      : currentDrawing.lineStyle === "dotted"
-                      ? "2 2"
-                      : "0"
-                  }
-                  fill="none"
-                  opacity="0.7"
-                />
-              )}
-            </svg>
+                )}
+              </svg>
+            </div>
           </div>
         ) : (
           <p className="text-white">Оберіть або завантажте карту.</p>
